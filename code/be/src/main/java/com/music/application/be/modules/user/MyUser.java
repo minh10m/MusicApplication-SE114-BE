@@ -13,14 +13,15 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class User {
+public class MyUser {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-//    @Column(name = "group_id")
-//    private Long groupId;
+    @Getter
+    @Column(unique = true, nullable = false)
+    private String role;
 
     @Column(nullable = false, unique = true)
     private String username;
@@ -53,4 +54,5 @@ public class User {
     private String language;
 
     private String theme;
+
 }

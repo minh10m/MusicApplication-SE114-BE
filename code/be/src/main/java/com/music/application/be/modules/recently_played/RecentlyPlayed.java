@@ -1,7 +1,7 @@
 package com.music.application.be.modules.recently_played;
 
 import com.music.application.be.modules.song.Song;
-import com.music.application.be.modules.user.User;
+import com.music.application.be.modules.user.MyUser;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -23,7 +23,7 @@ public class RecentlyPlayed {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    private MyUser user;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "song_id", nullable = false)
