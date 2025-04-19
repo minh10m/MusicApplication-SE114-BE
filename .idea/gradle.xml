@@ -8,7 +8,7 @@
         <option name="gradleJvm" value="#JAVA_HOME" />
         <option name="modules">
           <set>
-            <option value="$PROJECT_DIR$/../../../NM ƯD/Music_application/MusicApplication-SE114/code/be" />
+            <option value="$PROJECT_DIR$/code/be" />
           </set>
         </option>
       </GradleProjectSettings>
