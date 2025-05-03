@@ -1,7 +1,7 @@
 package com.music.application.be.modules.favorite_song;
 
 import com.music.application.be.modules.song.Song;
-import com.music.application.be.modules.user.MyUser;
+import com.music.application.be.modules.user.User;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -23,7 +23,7 @@ public class FavoriteSong {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
-    private MyUser user;
+    private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "song_id", nullable = false)
