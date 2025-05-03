@@ -2,8 +2,8 @@ package com.music.application.be.modules.listening_history;
 
 import com.music.application.be.modules.song.Song;
 import com.music.application.be.modules.song.SongRepository;
-import com.music.application.be.modules.user.MyUser;
-import com.music.application.be.modules.user.MyUserRepository;
+import com.music.application.be.modules.user.User;
+import com.music.application.be.modules.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,11 +18,11 @@ public class ListeningHistoryService {
 
     private final ListeningHistoryRepository listeningHistoryRepository;
     private final SongRepository songRepository;
-    private final MyUserRepository userRepository;
+    private final UserRepository userRepository;
 
     @Transactional
     public Optional<ListeningHistory> addListeningHistory(Long userId, Long songId, Integer durationPlayed) {
-        Optional<MyUser> user = userRepository.findById(userId);
+        Optional<User> user = userRepository.findById(userId);
         Optional<Song> song = songRepository.findById(songId);
         if (user.isPresent() && song.isPresent()) {
             ListeningHistory history = ListeningHistory.builder()

@@ -1,6 +1,9 @@
 package com.music.application.be.modules.user;
 
+import com.music.application.be.modules.artist.Artist;
+import com.music.application.be.modules.playlist.Playlist;
 import com.music.application.be.modules.role.Role;
+import com.music.application.be.modules.song.Song;
 import com.music.application.be.modules.token.Token;
 import jakarta.persistence.*;
 import lombok.*;
@@ -11,7 +14,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "users")
@@ -44,11 +49,32 @@ public class User implements UserDetails {
 
     private String avatar;
 
-//    @Column(name = "streaming_quality")
-//    private String streamingQuality;
-//
-//    @Column(name = "download_quality")
-//    private String downloadQuality;
+
+    @ManyToMany
+    @JoinTable(
+            name = "user_favorite_songs",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "song_id")
+    )
+    private Set<Song> favoriteSongs = new HashSet<>();
+
+    // Quan hệ nhiều-nhiều với Playlist (Favorite Playlists)
+    @ManyToMany
+    @JoinTable(
+            name = "user_favorite_playlists",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "playlist_id")
+    )
+    private Set<Playlist> favoritePlaylists = new HashSet<>();
+
+    // Quan hệ nhiều-nhiều với Artist (Followed Artists)
+    @ManyToMany
+    @JoinTable(
+            name = "user_followed_artists",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "artist_id")
+    )
+    private Set<Artist> followedArtists = new HashSet<>();
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)

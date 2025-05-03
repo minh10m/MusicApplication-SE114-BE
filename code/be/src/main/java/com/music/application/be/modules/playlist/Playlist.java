@@ -1,21 +1,23 @@
 package com.music.application.be.modules.playlist;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.music.application.be.modules.song_playlist.SongPlaylist;
+import com.music.application.be.modules.user.User;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "playlists")
 @Getter
 @Setter
 @NoArgsConstructor
+
 public class Playlist {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -40,5 +42,9 @@ public class Playlist {
     @OneToMany(mappedBy = "playlist", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("position ASC")
     private List<SongPlaylist> songs = new ArrayList<>();
+
+    @ManyToMany(mappedBy = "favoritePlaylists")
+    @JsonIgnore
+    private Set<User> favoritedByUsers;
 
 }

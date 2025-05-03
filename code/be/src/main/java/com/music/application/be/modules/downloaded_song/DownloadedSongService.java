@@ -2,8 +2,8 @@ package com.music.application.be.modules.downloaded_song;
 
 import com.music.application.be.modules.song.Song;
 import com.music.application.be.modules.song.SongRepository;
-import com.music.application.be.modules.user.MyUser;
-import com.music.application.be.modules.user.MyUserRepository;
+import com.music.application.be.modules.user.User;
+import com.music.application.be.modules.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,14 +18,14 @@ public class DownloadedSongService {
 
     private final DownloadedSongRepository downloadedSongRepository;
     private final SongRepository songRepository;
-    private final MyUserRepository userRepository;
+    private final UserRepository userRepository;
 
     @Transactional
     public Optional<DownloadedSong> addDownloadedSong(Long userId, Long songId) {
         if (downloadedSongRepository.existsByUserIdAndSongId(userId, songId)) {
             return Optional.empty();
         }
-        Optional<MyUser> user = userRepository.findById(userId);
+        Optional<User> user = userRepository.findById(userId);
         Optional<Song> song = songRepository.findById(songId);
         if (user.isPresent() && song.isPresent()) {
             DownloadedSong download = DownloadedSong.builder()
