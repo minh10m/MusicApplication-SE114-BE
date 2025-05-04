@@ -1,5 +1,6 @@
 package com.music.application.be.modules.playlist;
 
+import com.music.application.be.modules.genre.Genre;
 import com.music.application.be.modules.song_playlist.SongPlaylist;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -21,24 +22,23 @@ public class Playlist {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "owner_id", nullable = false)
-    private Long ownerId;  // Assuming owner_id references a user ID
-
     @Column(nullable = false)
     private String name;
 
-    @Column(columnDefinition = "TEXT")
     private String description;
 
-    @Column(nullable = false)
-    private String type;  // Could be enum if you have specific types
-
     @CreationTimestamp
-    @Column(name = "created_at", nullable = false, updatable = false)
+    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
     @OneToMany(mappedBy = "playlist", cascade = CascadeType.ALL, orphanRemoval = true)
-    @OrderBy("position ASC")
     private List<SongPlaylist> songs = new ArrayList<>();
 
+    @ManyToMany
+    @JoinTable(
+            name = "playlist_genre",
+            joinColumns = @JoinColumn(name = "playlist_id"),
+            inverseJoinColumns = @JoinColumn(name = "genre_id")
+    )
+    private List<Genre> genres = new ArrayList<>();
 }

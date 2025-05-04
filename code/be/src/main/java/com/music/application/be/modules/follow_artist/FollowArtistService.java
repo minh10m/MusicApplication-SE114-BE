@@ -2,55 +2,69 @@ package com.music.application.be.modules.follow_artist;
 
 import com.music.application.be.modules.artist.Artist;
 import com.music.application.be.modules.artist.ArtistRepository;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
 
 @Service
-@RequiredArgsConstructor
 public class FollowArtistService {
 
-    private final FollowArtistRepository followArtistRepository;
-    private final ArtistRepository artistRepository;
+    @Autowired
+    private FollowArtistRepository followArtistRepository;
 
-    @Transactional
-    public Optional<FollowArtist> followArtist(Long userId, Long artistId) {
-        if (followArtistRepository.existsByUserIdAndArtistId(userId, artistId)) {
-            return Optional.empty();
-        }
-        return artistRepository.findById(artistId)
-                .map(artist -> {
-                    FollowArtist follow = new FollowArtist();
-                    follow.setUserId(userId);
-                    follow.setArtist(artist);
-                    follow.setFollowedAt(LocalDateTime.now());
-                    artist.setFollowerCount(artist.getFollowerCount() + 1);
-                    artistRepository.save(artist);
-                    return followArtistRepository.save(follow);
-                });
+    @Autowired
+    private ArtistRepository artistRepository;
+
+    // Follow artist
+    public FollowArtistDTO followArtist(Long userId, Long artistId) {
+        Artist artist = artistRepository.findById(artistId)
+                .orElseThrow(() -> new RuntimeException("Artist not found"));
+
+        FollowArtist followArtist = new FollowArtist();
+        followArtist.setUserId(userId);
+        followArtist.setArtist(artist);
+        followArtist.setFollowedAt(LocalDateTime.now());
+
+        FollowArtist savedFollow = followArtistRepository.save(followArtist);
+        artist.setFollowerCount(artist.getFollowerCount() + 1);
+        artistRepository.save(artist);
+
+        return mapToDTO(savedFollow);
     }
 
-    @Transactional
-    public boolean unfollowArtist(Long userId, Long artistId) {
-        return followArtistRepository.findByUserId(userId).stream()
-                .filter(follow -> follow.getArtist().getId().equals(artistId))
-                .findFirst()
-                .map(follow -> {
-                    Artist artist = follow.getArtist();
-                    artist.setFollowerCount(Math.max(0, artist.getFollowerCount() - 1));
-                    artistRepository.save(artist);
-                    followArtistRepository.delete(follow);
-                    return true;
-                })
-                .orElse(false);
+    // Unfollow artist
+    public void unfollowArtist(Long userId, Long artistId) {
+        FollowArtist followArtist = followArtistRepository.findByUserIdAndArtistId(userId, artistId)
+                .orElseThrow(() -> new RuntimeException("Follow relationship not found"));
+        Artist artist = artistRepository.findById(artistId)
+                .orElseThrow(() -> new RuntimeException("Artist not found"));
+
+        followArtistRepository.delete(followArtist);
+        artist.setFollowerCount(artist.getFollowerCount() - 1);
+        artistRepository.save(artist);
     }
 
-    @Transactional(readOnly = true)
-    public List<FollowArtist> getFollowedArtists(Long userId) {
-        return followArtistRepository.findByUserId(userId);
+    // Get followed artists
+    public Page<FollowArtistDTO> getFollowedArtists(Long userId, Pageable pageable) {
+        return followArtistRepository.findByUserId(userId, pageable).map(this::mapToDTO);
+    }
+
+    // Search followed artists
+    public Page<FollowArtistDTO> searchFollowedArtists(Long userId, String query, Pageable pageable) {
+        return followArtistRepository.findByUserIdAndArtistNameContainingIgnoreCase(userId, query, pageable)
+                .map(this::mapToDTO);
+    }
+
+    // Map entity to DTO
+    private FollowArtistDTO mapToDTO(FollowArtist followArtist) {
+        FollowArtistDTO dto = new FollowArtistDTO();
+        dto.setId(followArtist.getId());
+        dto.setUserId(followArtist.getUserId());
+        dto.setArtistId(followArtist.getArtist().getId());
+        dto.setFollowedAt(followArtist.getFollowedAt());
+        return dto;
     }
 }

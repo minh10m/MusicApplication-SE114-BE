@@ -1,5 +1,6 @@
 package com.music.application.be.modules.genre;
 
+import com.music.application.be.modules.playlist.Playlist;
 import com.music.application.be.modules.song.Song;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -23,6 +24,9 @@ public class Genre {
     @Column(columnDefinition = "TEXT")
     private String description;
 
-    @OneToMany(mappedBy = "genre", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ManyToMany(mappedBy = "genres")
     private List<Song> songs = new ArrayList<>();
+
+    @ManyToMany(mappedBy = "genres")
+    private List<Playlist> playlists = new ArrayList<>();
 }

@@ -4,51 +4,74 @@ import com.music.application.be.modules.playlist.Playlist;
 import com.music.application.be.modules.playlist.PlaylistRepository;
 import com.music.application.be.modules.song.Song;
 import com.music.application.be.modules.song.SongRepository;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
+import java.time.LocalDateTime;
 
 @Service
-@RequiredArgsConstructor
 public class SongPlaylistService {
 
-    private final SongPlaylistRepository songPlaylistRepository;
-    private final SongRepository songRepository;
-    private final PlaylistRepository playlistRepository;
+    @Autowired
+    private SongPlaylistRepository songPlaylistRepository;
 
-    @Transactional
-    public Optional<SongPlaylist> addSongToPlaylist(Long songId, Long playlistId, Integer position) {
-        Optional<Song> song = songRepository.findById(songId);
-        Optional<Playlist> playlist = playlistRepository.findById(playlistId);
+    @Autowired
+    private SongRepository songRepository;
 
-        if (song.isPresent() && playlist.isPresent()) {
-            SongPlaylist songPlaylist = new SongPlaylist();
-            songPlaylist.setSong(song.get());
-            songPlaylist.setPlaylist(playlist.get());
-            songPlaylist.setPosition(position != null ? position : 0);
-            return Optional.of(songPlaylistRepository.save(songPlaylist));
+    @Autowired
+    private PlaylistRepository playlistRepository;
+
+    // Add song to playlist
+    public SongPlaylistDTO addSongToPlaylist(SongPlaylistDTO songPlaylistDTO) {
+        Song song = songRepository.findById(songPlaylistDTO.getSongId())
+                .orElseThrow(() -> new RuntimeException("Song not found"));
+        Playlist playlist = playlistRepository.findById(songPlaylistDTO.getPlaylistId())
+                .orElseThrow(() -> new RuntimeException("Playlist not found"));
+
+        // Kiểm tra xem bài hát đã có trong playlist chưa
+        boolean exists = songPlaylistRepository.findByPlaylistIdOrderByAddedAtDesc(playlist.getId())
+                .stream()
+                .anyMatch(sp -> sp.getSong().getId().equals(song.getId()));
+        if (exists) {
+            throw new RuntimeException("Song already exists in playlist");
         }
-        return Optional.empty();
+
+        SongPlaylist songPlaylist = new SongPlaylist();
+        songPlaylist.setSong(song);
+        songPlaylist.setPlaylist(playlist);
+        songPlaylist.setAddedAt(LocalDateTime.now());
+
+        SongPlaylist savedSongPlaylist = songPlaylistRepository.save(songPlaylist);
+        return mapToDTO(savedSongPlaylist);
     }
 
-    @Transactional
-    public boolean removeSongFromPlaylist(Long songPlaylistId) {
-        return songPlaylistRepository.findById(songPlaylistId)
-                .map(songPlaylist -> {
-                    songPlaylistRepository.delete(songPlaylist);
-                    return true;
-                })
-                .orElse(false);
+    // Update addedAt
+    public SongPlaylistDTO updateSongPlaylist(Long id, SongPlaylistDTO songPlaylistDTO) {
+        SongPlaylist songPlaylist = songPlaylistRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("SongPlaylist not found"));
+
+        if (songPlaylistDTO.getAddedAt() != null) {
+            songPlaylist.setAddedAt(songPlaylistDTO.getAddedAt());
+        }
+
+        SongPlaylist updatedSongPlaylist = songPlaylistRepository.save(songPlaylist);
+        return mapToDTO(updatedSongPlaylist);
     }
 
-    @Transactional
-    public Optional<SongPlaylist> updateSongPosition(Long songPlaylistId, Integer newPosition) {
-        return songPlaylistRepository.findById(songPlaylistId)
-                .map(songPlaylist -> {
-                    songPlaylist.setPosition(newPosition);
-                    return songPlaylistRepository.save(songPlaylist);
-                });
+    // Remove song from playlist
+    public void removeSongFromPlaylist(Long id) {
+        SongPlaylist songPlaylist = songPlaylistRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("SongPlaylist not found"));
+        songPlaylistRepository.delete(songPlaylist);
+    }
+
+    // Map entity to DTO
+    private SongPlaylistDTO mapToDTO(SongPlaylist songPlaylist) {
+        SongPlaylistDTO dto = new SongPlaylistDTO();
+        dto.setId(songPlaylist.getId());
+        dto.setSongId(songPlaylist.getSong().getId());
+        dto.setPlaylistId(songPlaylist.getPlaylist().getId());
+        dto.setAddedAt(songPlaylist.getAddedAt());
+        return dto;
     }
 }

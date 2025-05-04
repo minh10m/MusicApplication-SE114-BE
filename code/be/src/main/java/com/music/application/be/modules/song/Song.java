@@ -8,6 +8,8 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "songs")
@@ -45,7 +47,11 @@ public class Song {
     @JoinColumn(name = "artist_id", nullable = false)
     private Artist artist;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "genre_id")
-    private Genre genre;
+    @ManyToMany
+    @JoinTable(
+            name = "song_genre",
+            joinColumns = @JoinColumn(name = "song_id"),
+            inverseJoinColumns = @JoinColumn(name = "genre_id")
+    )
+    private List<Genre> genres = new ArrayList<>();
 }

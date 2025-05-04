@@ -1,6 +1,6 @@
-package com.music.application.be.modules.listening_history;
+package com.music.application.be.modules.favorite_playlist;
 
-import com.music.application.be.modules.song.Song;
+import com.music.application.be.modules.playlist.Playlist;
 import com.music.application.be.modules.user.MyUser;
 import jakarta.persistence.*;
 import lombok.*;
@@ -9,13 +9,13 @@ import org.hibernate.annotations.CreationTimestamp;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "listening_history")
+@Table(name = "favorite_playlists")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ListeningHistory {
+public class FavoritePlaylist {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,13 +26,10 @@ public class ListeningHistory {
     private MyUser user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "song_id", nullable = false)
-    private Song song;
+    @JoinColumn(name = "playlist_id", nullable = false)
+    private Playlist playlist;
 
     @CreationTimestamp
-    @Column(name = "played_at", updatable = false)
-    private LocalDateTime playedAt;
-
-    @Column(name = "duration_played", nullable = false)
-    private Integer durationPlayed; // in seconds
+    @Column(name = "added_at", updatable = false)
+    private LocalDateTime addedAt;
 }

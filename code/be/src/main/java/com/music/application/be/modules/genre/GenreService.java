@@ -1,60 +1,68 @@
 package com.music.application.be.modules.genre;
 
-import com.music.application.be.modules.song.Song;
-import com.music.application.be.modules.song.SongRepository;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.Optional;
 
 @Service
-@RequiredArgsConstructor
 public class GenreService {
 
-    private final GenreRepository genreRepository;
-    private final SongRepository songRepository;
+    @Autowired
+    private GenreRepository genreRepository;
 
-    @Transactional(readOnly = true)
-    public List<Genre> getAllGenres() {
-        return genreRepository.findAll();
+    // Create
+    public GenreDTO createGenre(GenreDTO genreDTO) {
+        Genre genre = new Genre();
+        genre.setName(genreDTO.getName());
+        genre.setDescription(genreDTO.getDescription());
+
+        Genre savedGenre = genreRepository.save(genre);
+        return mapToDTO(savedGenre);
     }
 
-    @Transactional(readOnly = true)
-    public Optional<Genre> getGenreById(Long id) {
-        return genreRepository.findById(id);
+    // Read by ID
+    public GenreDTO getGenreById(Long id) {
+        Genre genre = genreRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Genre not found"));
+        return mapToDTO(genre);
     }
 
-    @Transactional
-    public Genre createGenre(Genre genre) {
-        return genreRepository.save(genre);
+    // Read all with pagination
+    public Page<GenreDTO> getAllGenres(Pageable pageable) {
+        return genreRepository.findAll(pageable).map(this::mapToDTO);
     }
 
-    @Transactional
-    public Optional<Genre> updateGenre(Long id, Genre updatedGenre) {
-        return genreRepository.findById(id)
-                .map(existingGenre -> {
-                    existingGenre.setName(updatedGenre.getName());
-                    existingGenre.setDescription(updatedGenre.getDescription());
-                    return genreRepository.save(existingGenre);
-                });
+    // Update
+    public GenreDTO updateGenre(Long id, GenreDTO genreDTO) {
+        Genre genre = genreRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Genre not found"));
+
+        genre.setName(genreDTO.getName());
+        genre.setDescription(genreDTO.getDescription());
+
+        Genre updatedGenre = genreRepository.save(genre);
+        return mapToDTO(updatedGenre);
     }
 
-    @Transactional
-    public boolean deleteGenre(Long id) {
-        return genreRepository.findById(id)
-                .map(genre -> {
-                    genreRepository.delete(genre);
-                    return true;
-                })
-                .orElse(false);
+    // Delete
+    public void deleteGenre(Long id) {
+        Genre genre = genreRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Genre not found"));
+        genreRepository.delete(genre);
     }
 
-    @Transactional(readOnly = true)
-    public List<Song> getSongsByGenre(Long genreId) {
-        return songRepository.findAll().stream()
-                .filter(song -> song.getGenre() != null && song.getGenre().getId().equals(genreId))
-                .toList();
+    // Search genres
+    public Page<GenreDTO> searchGenres(String query, Pageable pageable) {
+        return genreRepository.findByNameContainingIgnoreCase(query, pageable).map(this::mapToDTO);
+    }
+
+    // Map entity to DTO
+    private GenreDTO mapToDTO(Genre genre) {
+        GenreDTO dto = new GenreDTO();
+        dto.setId(genre.getId());
+        dto.setName(genre.getName());
+        dto.setDescription(genre.getDescription());
+        return dto;
     }
 }

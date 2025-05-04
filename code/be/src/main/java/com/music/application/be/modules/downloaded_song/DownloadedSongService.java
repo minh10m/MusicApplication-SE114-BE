@@ -4,54 +4,67 @@ import com.music.application.be.modules.song.Song;
 import com.music.application.be.modules.song.SongRepository;
 import com.music.application.be.modules.user.MyUser;
 import com.music.application.be.modules.user.MyUserRepository;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
 
 @Service
-@RequiredArgsConstructor
 public class DownloadedSongService {
 
-    private final DownloadedSongRepository downloadedSongRepository;
-    private final SongRepository songRepository;
-    private final MyUserRepository userRepository;
+    @Autowired
+    private DownloadedSongRepository downloadedSongRepository;
 
-    @Transactional
-    public Optional<DownloadedSong> addDownloadedSong(Long userId, Long songId) {
-        if (downloadedSongRepository.existsByUserIdAndSongId(userId, songId)) {
-            return Optional.empty();
-        }
-        Optional<MyUser> user = userRepository.findById(userId);
-        Optional<Song> song = songRepository.findById(songId);
-        if (user.isPresent() && song.isPresent()) {
-            DownloadedSong download = DownloadedSong.builder()
-                    .user(user.get())
-                    .song(song.get())
-                    .downloadedAt(LocalDateTime.now())
-                    .build();
-            return Optional.of(downloadedSongRepository.save(download));
-        }
-        return Optional.empty();
+    @Autowired
+    private MyUserRepository userRepository;
+
+    @Autowired
+    private SongRepository songRepository;
+
+    // Add downloaded song
+    public DownloadedSongDTO addDownloadedSong(Long userId, Long songId) {
+        MyUser user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        Song song = songRepository.findById(songId)
+                .orElseThrow(() -> new RuntimeException("Song not found"));
+
+        DownloadedSong downloadedSong = DownloadedSong.builder()
+                .user(user)
+                .song(song)
+                .downloadedAt(LocalDateTime.now())
+                .build();
+
+        DownloadedSong savedDownload = downloadedSongRepository.save(downloadedSong);
+        return mapToDTO(savedDownload);
     }
 
-    @Transactional
-    public boolean removeDownloadedSong(Long userId, Long songId) {
-        return downloadedSongRepository.findByUserId(userId).stream()
-                .filter(download -> download.getSong().getId().equals(songId))
-                .findFirst()
-                .map(download -> {
-                    downloadedSongRepository.delete(download);
-                    return true;
-                })
-                .orElse(false);
+    // Get downloaded songs
+    public Page<DownloadedSongDTO> getDownloadedSongs(Long userId, Pageable pageable) {
+        return downloadedSongRepository.findByUserId(userId, pageable).map(this::mapToDTO);
     }
 
-    @Transactional(readOnly = true)
-    public List<DownloadedSong> getDownloadedSongs(Long userId) {
-        return downloadedSongRepository.findByUserId(userId);
+    // Search downloaded songs
+    public Page<DownloadedSongDTO> searchDownloadedSongs(Long userId, String query, Pageable pageable) {
+        return downloadedSongRepository.findByUserIdAndSongTitleContainingIgnoreCase(userId, query, pageable)
+                .map(this::mapToDTO);
+    }
+
+    // Remove downloaded song
+    public void removeDownloadedSong(Long id) {
+        DownloadedSong downloadedSong = downloadedSongRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Downloaded song not found"));
+        downloadedSongRepository.delete(downloadedSong);
+    }
+
+    // Map entity to DTO
+    private DownloadedSongDTO mapToDTO(DownloadedSong downloadedSong) {
+        DownloadedSongDTO dto = new DownloadedSongDTO();
+        dto.setId(downloadedSong.getId());
+        dto.setUserId(downloadedSong.getUser().getId());
+        dto.setSongId(downloadedSong.getSong().getId());
+        dto.setDownloadedAt(downloadedSong.getDownloadedAt());
+        return dto;
     }
 }

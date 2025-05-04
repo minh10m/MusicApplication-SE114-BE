@@ -2,66 +2,108 @@ package com.music.application.be.modules.artist;
 
 import com.music.application.be.modules.album.Album;
 import com.music.application.be.modules.album.AlbumRepository;
-import com.music.application.be.modules.song.Song;
-import com.music.application.be.modules.song.SongRepository;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 public class ArtistService {
 
-    private final ArtistRepository artistRepository;
-    private final AlbumRepository albumRepository;
-    private final SongRepository songRepository;
+    @Autowired
+    private ArtistRepository artistRepository;
 
-    @Transactional(readOnly = true)
-    public List<Artist> getAllArtists() {
-        return artistRepository.findAll();
+    @Autowired
+    private AlbumRepository albumRepository;
+
+    // Create
+    public ArtistDTO createArtist(ArtistDTO artistDTO) {
+        Artist artist = new Artist();
+        artist.setName(artistDTO.getName());
+        artist.setAvatar(artistDTO.getAvatar());
+        artist.setDescription(artistDTO.getDescription());
+        artist.setFollowerCount(artistDTO.getFollowerCount());
+
+        // Liên kết các album nếu có
+        if (artistDTO.getAlbumIds() != null && !artistDTO.getAlbumIds().isEmpty()) {
+            List<Album> albums = albumRepository.findAllById(artistDTO.getAlbumIds());
+            if (albums.size() != artistDTO.getAlbumIds().size()) {
+                throw new RuntimeException("One or more albums not found");
+            }
+            artist.setAlbums(albums);
+        }
+
+        Artist savedArtist = artistRepository.save(artist);
+        return mapToDTO(savedArtist);
     }
 
-    @Transactional(readOnly = true)
-    public Optional<Artist> getArtistById(Long id) {
-        return artistRepository.findById(id);
+    // Read by ID
+    public ArtistDTO getArtistById(Long id) {
+        Artist artist = artistRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Artist not found"));
+        return mapToDTO(artist);
     }
 
-    @Transactional
-    public Artist createArtist(Artist artist) {
-        return artistRepository.save(artist);
+    // Read all with pagination
+    public Page<ArtistDTO> getAllArtists(Pageable pageable) {
+        return artistRepository.findAll(pageable).map(this::mapToDTO);
     }
 
-    @Transactional
-    public Optional<Artist> updateArtist(Long id, Artist updatedArtist) {
-        return artistRepository.findById(id)
-                .map(existingArtist -> {
-                    existingArtist.setName(updatedArtist.getName());
-                    existingArtist.setAvatar(updatedArtist.getAvatar());
-                    existingArtist.setDescription(updatedArtist.getDescription());
-                    return artistRepository.save(existingArtist);
-                });
+    // Update
+    public ArtistDTO updateArtist(Long id, ArtistDTO artistDTO) {
+        Artist artist = artistRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Artist not found"));
+
+        artist.setName(artistDTO.getName());
+        artist.setAvatar(artistDTO.getAvatar());
+        artist.setDescription(artistDTO.getDescription());
+        artist.setFollowerCount(artistDTO.getFollowerCount());
+
+        // Cập nhật danh sách album
+        if (artistDTO.getAlbumIds() != null) {
+            List<Album> albums = albumRepository.findAllById(artistDTO.getAlbumIds());
+            if (albums.size() != artistDTO.getAlbumIds().size()) {
+                throw new RuntimeException("One or more albums not found");
+            }
+            artist.setAlbums(albums);
+        } else {
+            artist.setAlbums(null);
+        }
+
+        Artist updatedArtist = artistRepository.save(artist);
+        return mapToDTO(updatedArtist);
     }
 
-    @Transactional
-    public boolean deleteArtist(Long id) {
-        return artistRepository.findById(id)
-                .map(artist -> {
-                    artistRepository.delete(artist);
-                    return true;
-                })
-                .orElse(false);
+    // Delete
+    public void deleteArtist(Long id) {
+        Artist artist = artistRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Artist not found"));
+        artistRepository.delete(artist);
     }
 
-    @Transactional(readOnly = true)
-    public List<Album> getAlbumsByArtist(Long artistId) {
-        return albumRepository.findByArtistId(artistId);
+    // Search artists
+    public Page<ArtistDTO> searchArtists(String query, Pageable pageable) {
+        return artistRepository.findByNameContainingIgnoreCase(query, pageable).map(this::mapToDTO);
     }
 
-    @Transactional(readOnly = true)
-    public List<Song> getSongsByArtist(Long artistId) {
-        return songRepository.findByArtistId(artistId);
+    // Share artist
+    public String shareArtist(Long id) {
+        return "https://musicapp.com/artist/" + id;
+    }
+
+    // Map entity to DTO
+    private ArtistDTO mapToDTO(Artist artist) {
+        ArtistDTO dto = new ArtistDTO();
+        dto.setId(artist.getId());
+        dto.setName(artist.getName());
+        dto.setAvatar(artist.getAvatar());
+        dto.setDescription(artist.getDescription());
+        dto.setFollowerCount(artist.getFollowerCount());
+        dto.setAlbumIds(artist.getAlbums() != null ?
+                artist.getAlbums().stream().map(Album::getId).collect(Collectors.toList()) : null);
+        return dto;
     }
 }

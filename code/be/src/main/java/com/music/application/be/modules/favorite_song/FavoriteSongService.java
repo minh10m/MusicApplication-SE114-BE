@@ -4,54 +4,67 @@ import com.music.application.be.modules.song.Song;
 import com.music.application.be.modules.song.SongRepository;
 import com.music.application.be.modules.user.MyUser;
 import com.music.application.be.modules.user.MyUserRepository;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
 
 @Service
-@RequiredArgsConstructor
 public class FavoriteSongService {
 
-    private final FavoriteSongRepository favoriteSongRepository;
-    private final SongRepository songRepository;
-    private final MyUserRepository userRepository;
+    @Autowired
+    private FavoriteSongRepository favoriteSongRepository;
 
-    @Transactional
-    public Optional<FavoriteSong> addFavoriteSong(Long userId, Long songId) {
-        if (favoriteSongRepository.existsByUserIdAndSongId(userId, songId)) {
-            return Optional.empty();
-        }
-        Optional<MyUser> user = userRepository.findById(userId);
-        Optional<Song> song = songRepository.findById(songId);
-        if (user.isPresent() && song.isPresent()) {
-            FavoriteSong favorite = FavoriteSong.builder()
-                    .user(user.get())
-                    .song(song.get())
-                    .addedAt(LocalDateTime.now())
-                    .build();
-            return Optional.of(favoriteSongRepository.save(favorite));
-        }
-        return Optional.empty();
+    @Autowired
+    private MyUserRepository userRepository;
+
+    @Autowired
+    private SongRepository songRepository;
+
+    // Add favorite song
+    public FavoriteSongDTO addFavoriteSong(Long userId, Long songId) {
+        MyUser user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        Song song = songRepository.findById(songId)
+                .orElseThrow(() -> new RuntimeException("Song not found"));
+
+        FavoriteSong favoriteSong = FavoriteSong.builder()
+                .user(user)
+                .song(song)
+                .addedAt(LocalDateTime.now())
+                .build();
+
+        FavoriteSong savedFavorite = favoriteSongRepository.save(favoriteSong);
+        return mapToDTO(savedFavorite);
     }
 
-    @Transactional
-    public boolean removeFavoriteSong(Long userId, Long songId) {
-        return favoriteSongRepository.findByUserId(userId).stream()
-                .filter(favorite -> favorite.getSong().getId().equals(songId))
-                .findFirst()
-                .map(favorite -> {
-                    favoriteSongRepository.delete(favorite);
-                    return true;
-                })
-                .orElse(false);
+    // Get favorite songs
+    public Page<FavoriteSongDTO> getFavoriteSongs(Long userId, Pageable pageable) {
+        return favoriteSongRepository.findByUserId(userId, pageable).map(this::mapToDTO);
     }
 
-    @Transactional(readOnly = true)
-    public List<FavoriteSong> getFavoriteSongs(Long userId) {
-        return favoriteSongRepository.findByUserId(userId);
+    // Search favorite songs
+    public Page<FavoriteSongDTO> searchFavoriteSongs(Long userId, String query, Pageable pageable) {
+        return favoriteSongRepository.findByUserIdAndSongTitleContainingIgnoreCase(userId, query, pageable)
+                .map(this::mapToDTO);
+    }
+
+    // Remove favorite song
+    public void removeFavoriteSong(Long id) {
+        FavoriteSong favoriteSong = favoriteSongRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Favorite song not found"));
+        favoriteSongRepository.delete(favoriteSong);
+    }
+
+    // Map entity to DTO
+    private FavoriteSongDTO mapToDTO(FavoriteSong favoriteSong) {
+        FavoriteSongDTO dto = new FavoriteSongDTO();
+        dto.setId(favoriteSong.getId());
+        dto.setUserId(favoriteSong.getUser().getId());
+        dto.setSongId(favoriteSong.getSong().getId());
+        dto.setAddedAt(favoriteSong.getAddedAt());
+        return dto;
     }
 }

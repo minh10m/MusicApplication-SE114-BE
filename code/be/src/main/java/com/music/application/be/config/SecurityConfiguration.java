@@ -27,18 +27,28 @@ public class SecurityConfiguration {
     @Autowired
     private JwtAuthenticationFilter jwtAuthenticationFilter;
 
+//    @Bean
+//    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
+//        return httpSecurity
+//                .csrf(AbstractHttpConfigurer::disable)
+//                .authorizeHttpRequests(registry -> {
+//                    registry.requestMatchers("/home", "/register/**", "/authenticate").permitAll();
+//                    registry.requestMatchers("/admin/**").hasRole("ADMIN");
+//                    registry.requestMatchers("/user/**").hasRole("USER");
+//                    registry.anyRequest().authenticated();
+//                })
+//                .formLogin(AbstractAuthenticationFilterConfigurer::permitAll)
+//                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+//                .build();
+//    }
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         return httpSecurity
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(registry -> {
-                    registry.requestMatchers("/home", "/register/**", "/authenticate").permitAll();
-                    registry.requestMatchers("/admin/**").hasRole("ADMIN");
-                    registry.requestMatchers("/user/**").hasRole("USER");
-                    registry.anyRequest().authenticated();
+                    registry.anyRequest().permitAll(); // Allow all requests without authentication
                 })
-                .formLogin(AbstractAuthenticationFilterConfigurer::permitAll)
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
 
@@ -64,4 +74,5 @@ public class SecurityConfiguration {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
+
 }

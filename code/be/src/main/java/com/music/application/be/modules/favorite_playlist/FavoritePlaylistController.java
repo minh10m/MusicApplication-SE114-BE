@@ -1,4 +1,4 @@
-package com.music.application.be.modules.favorite_song;
+package com.music.application.be.modules.favorite_playlist;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -9,23 +9,23 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/favorite-songs")
-public class FavoriteSongController {
+@RequestMapping("/api/favorite-playlists")
+public class FavoritePlaylistController {
 
     @Autowired
-    private FavoriteSongService favoriteSongService;
+    private FavoritePlaylistService favoritePlaylistService;
 
-    // Add favorite song
+    // Add favorite playlist
     @PostMapping
-    public ResponseEntity<FavoriteSongDTO> addFavoriteSong(
+    public ResponseEntity<FavoritePlaylistDTO> addFavoritePlaylist(
             @RequestParam Long userId,
-            @RequestParam Long songId) {
-        return ResponseEntity.ok(favoriteSongService.addFavoriteSong(userId, songId));
+            @RequestParam Long playlistId) {
+        return ResponseEntity.ok(favoritePlaylistService.addFavoritePlaylist(userId, playlistId));
     }
 
-    // Get favorite songs with sorting
+    // Get favorite playlists
     @GetMapping("/user/{userId}")
-    public ResponseEntity<Page<FavoriteSongDTO>> getFavoriteSongs(
+    public ResponseEntity<Page<FavoritePlaylistDTO>> getFavoritePlaylists(
             @PathVariable Long userId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
@@ -33,12 +33,12 @@ public class FavoriteSongController {
             @RequestParam(defaultValue = "desc") String sortDir) {
         Sort sort = Sort.by(sortDir.equalsIgnoreCase("asc") ? Sort.Order.asc(sortBy) : Sort.Order.desc(sortBy));
         Pageable pageable = PageRequest.of(page, size, sort);
-        return ResponseEntity.ok(favoriteSongService.getFavoriteSongs(userId, pageable));
+        return ResponseEntity.ok(favoritePlaylistService.getFavoritePlaylists(userId, pageable));
     }
 
-    // Search favorite songs with sorting
+    // Search favorite playlists
     @GetMapping("/user/{userId}/search")
-    public ResponseEntity<Page<FavoriteSongDTO>> searchFavoriteSongs(
+    public ResponseEntity<Page<FavoritePlaylistDTO>> searchFavoritePlaylists(
             @PathVariable Long userId,
             @RequestParam String query,
             @RequestParam(defaultValue = "0") int page,
@@ -47,13 +47,13 @@ public class FavoriteSongController {
             @RequestParam(defaultValue = "desc") String sortDir) {
         Sort sort = Sort.by(sortDir.equalsIgnoreCase("asc") ? Sort.Order.asc(sortBy) : Sort.Order.desc(sortBy));
         Pageable pageable = PageRequest.of(page, size, sort);
-        return ResponseEntity.ok(favoriteSongService.searchFavoriteSongs(userId, query, pageable));
+        return ResponseEntity.ok(favoritePlaylistService.searchFavoritePlaylists(userId, query, pageable));
     }
 
-    // Remove favorite song
+    // Remove favorite playlist
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> removeFavoriteSong(@PathVariable Long id) {
-        favoriteSongService.removeFavoriteSong(id);
+    public ResponseEntity<Void> removeFavoritePlaylist(@PathVariable Long id) {
+        favoritePlaylistService.removeFavoritePlaylist(id);
         return ResponseEntity.ok().build();
     }
 }

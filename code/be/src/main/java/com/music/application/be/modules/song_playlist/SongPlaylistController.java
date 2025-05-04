@@ -1,36 +1,34 @@
 package com.music.application.be.modules.song_playlist;
 
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/song-playlist")
-@RequiredArgsConstructor
+@RequestMapping("/api/song-playlists")
 public class SongPlaylistController {
 
-    private final SongPlaylistService songPlaylistService;
+    @Autowired
+    private SongPlaylistService songPlaylistService;
 
+    // Add song to playlist
     @PostMapping
-    public ResponseEntity<SongPlaylist> addSongToPlaylist(@RequestParam Long songId,
-                                                          @RequestParam Long playlistId,
-                                                          @RequestParam(required = false) Integer position) {
-        return songPlaylistService.addSongToPlaylist(songId, playlistId, position)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.badRequest().build());
+    public ResponseEntity<SongPlaylistDTO> addSongToPlaylist(@RequestBody SongPlaylistDTO songPlaylistDTO) {
+        return ResponseEntity.ok(songPlaylistService.addSongToPlaylist(songPlaylistDTO));
     }
 
+    // Update addedAt
+    @PutMapping("/{id}")
+    public ResponseEntity<SongPlaylistDTO> updateSongPlaylist(
+            @PathVariable Long id,
+            @RequestBody SongPlaylistDTO songPlaylistDTO) {
+        return ResponseEntity.ok(songPlaylistService.updateSongPlaylist(id, songPlaylistDTO));
+    }
+
+    // Remove song from playlist
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> removeSongFromPlaylist(@PathVariable Long id) {
-        return songPlaylistService.removeSongFromPlaylist(id)
-                ? ResponseEntity.noContent().build()
-                : ResponseEntity.notFound().build();
-    }
-
-    @PutMapping("/{id}/position")
-    public ResponseEntity<SongPlaylist> updateSongPosition(@PathVariable Long id, @RequestParam Integer newPosition) {
-        return songPlaylistService.updateSongPosition(id, newPosition)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        songPlaylistService.removeSongFromPlaylist(id);
+        return ResponseEntity.ok().build();
     }
 }
