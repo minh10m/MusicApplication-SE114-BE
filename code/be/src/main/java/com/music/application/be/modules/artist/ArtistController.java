@@ -1,58 +1,68 @@
 package com.music.application.be.modules.artist;
 
-import com.music.application.be.modules.album.Album;
-import com.music.application.be.modules.song.Song;
-import lombok.RequiredArgsConstructor;
+import com.music.application.be.modules.album.AlbumDTO;
+import com.music.application.be.modules.song.SongDTO;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
 @RequestMapping("/api/artists")
-@RequiredArgsConstructor
 public class ArtistController {
 
-    private final ArtistService artistService;
+    @Autowired
+    private ArtistService artistService;
 
-    @GetMapping
-    public ResponseEntity<List<Artist>> getAllArtists() {
-        return ResponseEntity.ok(artistService.getAllArtists());
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<Artist> getArtistById(@PathVariable Long id) {
-        return artistService.getArtistById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
-
+    // Create artist
     @PostMapping
-    public ResponseEntity<Artist> createArtist(@RequestBody Artist artist) {
-        return ResponseEntity.ok(artistService.createArtist(artist));
+    public ResponseEntity<ArtistDTO> createArtist(@RequestBody ArtistDTO artistDTO) {
+        return ResponseEntity.ok(artistService.createArtist(artistDTO));
     }
 
+    // Get artist by ID
+    @GetMapping("/{id}")
+    public ResponseEntity<ArtistDTO> getArtistById(@PathVariable Long id) {
+        return ResponseEntity.ok(artistService.getArtistById(id));
+    }
+
+    // Get all artists
+    @GetMapping
+    public ResponseEntity<Page<ArtistDTO>> getAllArtists(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return ResponseEntity.ok(artistService.getAllArtists(pageable));
+    }
+
+    // Update artist
     @PutMapping("/{id}")
-    public ResponseEntity<Artist> updateArtist(@PathVariable Long id, @RequestBody Artist artist) {
-        return artistService.updateArtist(id, artist)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<ArtistDTO> updateArtist(@PathVariable Long id, @RequestBody ArtistDTO artistDTO) {
+        return ResponseEntity.ok(artistService.updateArtist(id, artistDTO));
     }
 
+    // Delete artist
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteArtist(@PathVariable Long id) {
-        return artistService.deleteArtist(id)
-                ? ResponseEntity.noContent().build()
-                : ResponseEntity.notFound().build();
+        artistService.deleteArtist(id);
+        return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/{id}/albums")
-    public ResponseEntity<List<Album>> getAlbumsByArtist(@PathVariable Long id) {
-        return ResponseEntity.ok(artistService.getAlbumsByArtist(id));
+    // Search artists
+    @GetMapping("/search")
+    public ResponseEntity<Page<ArtistDTO>> searchArtists(
+            @RequestParam String query,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return ResponseEntity.ok(artistService.searchArtists(query, pageable));
     }
 
-    @GetMapping("/{id}/songs")
-    public ResponseEntity<List<Song>> getSongsByArtist(@PathVariable Long id) {
-        return ResponseEntity.ok(artistService.getSongsByArtist(id));
+    // Share artist
+    @GetMapping("/{id}/share")
+    public ResponseEntity<String> shareArtist(@PathVariable Long id) {
+        return ResponseEntity.ok(artistService.shareArtist(id));
     }
 }

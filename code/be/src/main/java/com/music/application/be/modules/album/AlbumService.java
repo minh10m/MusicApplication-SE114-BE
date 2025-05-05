@@ -3,65 +3,99 @@ package com.music.application.be.modules.album;
 import com.music.application.be.modules.artist.Artist;
 import com.music.application.be.modules.artist.ArtistRepository;
 import com.music.application.be.modules.song.Song;
-import com.music.application.be.modules.song.SongRepository;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 public class AlbumService {
 
-    private final AlbumRepository albumRepository;
-    private final ArtistRepository artistRepository;
-    private final SongRepository songRepository;
+    @Autowired
+    private AlbumRepository albumRepository;
 
-    @Transactional(readOnly = true)
-    public List<Album> getAllAlbums() {
-        return albumRepository.findAll();
+    @Autowired
+    private ArtistRepository artistRepository;
+
+    // Create
+    public AlbumDTO createAlbum(AlbumDTO albumDTO) {
+        Artist artist = artistRepository.findById(albumDTO.getArtistId())
+                .orElseThrow(() -> new RuntimeException("Artist not found"));
+
+        Album album = new Album();
+        album.setName(albumDTO.getName());
+        album.setReleaseDate(albumDTO.getReleaseDate());
+        album.setCoverImage(albumDTO.getCoverImage());
+        album.setDescription(albumDTO.getDescription());
+        album.setArtist(artist);
+
+        Album savedAlbum = albumRepository.save(album);
+        return mapToDTO(savedAlbum);
     }
 
-    @Transactional(readOnly = true)
-    public Optional<Album> getAlbumById(Long id) {
-        return albumRepository.findById(id);
+    // Read by ID
+    public AlbumDTO getAlbumById(Long id) {
+        Album album = albumRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Album not found"));
+        return mapToDTO(album);
     }
 
-    @Transactional
-    public Optional<Album> createAlbum(Album album, Long artistId) {
-        return artistRepository.findById(artistId)
-                .map(artist -> {
-                    album.setArtist(artist);
-                    return albumRepository.save(album);
-                });
+    // Read all with pagination
+    public Page<AlbumDTO> getAllAlbums(Pageable pageable) {
+        return albumRepository.findAll(pageable).map(this::mapToDTO);
     }
 
-    @Transactional
-    public Optional<Album> updateAlbum(Long id, Album updatedAlbum) {
-        return albumRepository.findById(id)
-                .map(existingAlbum -> {
-                    existingAlbum.setName(updatedAlbum.getName());
-                    existingAlbum.setReleaseDate(updatedAlbum.getReleaseDate());
-                    existingAlbum.setCoverImage(updatedAlbum.getCoverImage());
-                    existingAlbum.setDescription(updatedAlbum.getDescription());
-                    return albumRepository.save(existingAlbum);
-                });
+    // Update
+    public AlbumDTO updateAlbum(Long id, AlbumDTO albumDTO) {
+        Album album = albumRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Album not found"));
+
+        Artist artist = artistRepository.findById(albumDTO.getArtistId())
+                .orElseThrow(() -> new RuntimeException("Artist not found"));
+
+        album.setName(albumDTO.getName());
+        album.setReleaseDate(albumDTO.getReleaseDate());
+        album.setCoverImage(albumDTO.getCoverImage());
+        album.setDescription(albumDTO.getDescription());
+        album.setArtist(artist);
+
+        Album updatedAlbum = albumRepository.save(album);
+        return mapToDTO(updatedAlbum);
     }
 
-    @Transactional
-    public boolean deleteAlbum(Long id) {
-        return albumRepository.findById(id)
-                .map(album -> {
-                    albumRepository.delete(album);
-                    return true;
-                })
-                .orElse(false);
+    // Delete
+    public void deleteAlbum(Long id) {
+        Album album = albumRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Album not found"));
+        albumRepository.delete(album);
     }
 
-    @Transactional(readOnly = true)
-    public List<Song> getSongsByAlbum(Long albumId) {
-        return songRepository.findByAlbumId(albumId);
+    // Search albums
+    public Page<AlbumDTO> searchAlbums(String query, Pageable pageable) {
+        return albumRepository.findByNameContainingIgnoreCase(query, pageable).map(this::mapToDTO);
+    }
+
+    // Get albums by artist
+    public Page<AlbumDTO> getAlbumsByArtist(Long artistId, Pageable pageable) {
+        return albumRepository.findByArtistId(artistId, pageable).map(this::mapToDTO);
+    }
+
+    // Share album
+    public String shareAlbum(Long id) {
+        return "https://musicapp.com/album/" + id;
+    }
+
+    // Map entity to DTO
+    private AlbumDTO mapToDTO(Album album) {
+        AlbumDTO dto = new AlbumDTO();
+        dto.setId(album.getId());
+        dto.setName(album.getName());
+        dto.setReleaseDate(album.getReleaseDate());
+        dto.setCoverImage(album.getCoverImage());
+        dto.setDescription(album.getDescription());
+        dto.setArtistId(album.getArtist().getId());
+        dto.setSongIds(album.getSongs().stream().map(Song::getId).collect(Collectors.toList()));
+        return dto;
     }
 }

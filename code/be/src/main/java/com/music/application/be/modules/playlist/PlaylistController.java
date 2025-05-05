@@ -1,57 +1,74 @@
+
 package com.music.application.be.modules.playlist;
 
-import com.music.application.be.modules.song_playlist.SongPlaylist;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
 @RequestMapping("/api/playlists")
-@RequiredArgsConstructor
 public class PlaylistController {
 
-    private final PlaylistService playlistService;
+    @Autowired
+    private PlaylistService playlistService;
 
-    @GetMapping
-    public ResponseEntity<List<Playlist>> getAllPlaylists() {
-        return ResponseEntity.ok(playlistService.getAllPlaylists());
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<Playlist> getPlaylistById(@PathVariable Long id) {
-        return playlistService.getPlaylistById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
-
-    @GetMapping("/owner/{ownerId}")
-    public ResponseEntity<List<Playlist>> getPlaylistsByOwner(@PathVariable Long ownerId) {
-        return ResponseEntity.ok(playlistService.getPlaylistsByOwner(ownerId));
-    }
-
+    // Create playlist
     @PostMapping
-    public ResponseEntity<Playlist> createPlaylist(@RequestBody Playlist playlist, @RequestParam Long ownerId) {
-        return ResponseEntity.ok(playlistService.createPlaylist(playlist, ownerId));
+    public ResponseEntity<PlaylistDTO> createPlaylist(@RequestBody PlaylistDTO playlistDTO) {
+        return ResponseEntity.ok(playlistService.createPlaylist(playlistDTO));
     }
 
+    // Get playlist by ID
+    @GetMapping("/{id}")
+    public ResponseEntity<PlaylistDTO> getPlaylistById(@PathVariable Long id) {
+        return ResponseEntity.ok(playlistService.getPlaylistById(id));
+    }
+
+    // Get all playlists
+    @GetMapping
+    public ResponseEntity<Page<PlaylistDTO>> getAllPlaylists(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDir) {
+        Sort sort = Sort.by(sortDir.equalsIgnoreCase("asc") ? Sort.Order.asc(sortBy) : Sort.Order.desc(sortBy));
+        Pageable pageable = PageRequest.of(page, size, sort);
+        return ResponseEntity.ok(playlistService.getAllPlaylists(pageable));
+    }
+
+    // Update playlist
     @PutMapping("/{id}")
-    public ResponseEntity<Playlist> updatePlaylist(@PathVariable Long id, @RequestBody Playlist playlist) {
-        return playlistService.updatePlaylist(id, playlist)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<PlaylistDTO> updatePlaylist(@PathVariable Long id, @RequestBody PlaylistDTO playlistDTO) {
+        return ResponseEntity.ok(playlistService.updatePlaylist(id, playlistDTO));
     }
 
+    // Delete playlist
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletePlaylist(@PathVariable Long id) {
-        return playlistService.deletePlaylist(id)
-                ? ResponseEntity.noContent().build()
-                : ResponseEntity.notFound().build();
+        playlistService.deletePlaylist(id);
+        return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/{id}/songs")
-    public ResponseEntity<List<SongPlaylist>> getSongsInPlaylist(@PathVariable Long id) {
-        return ResponseEntity.ok(playlistService.getSongsInPlaylist(id));
+    // Search playlists
+    @GetMapping("/search")
+    public ResponseEntity<Page<PlaylistDTO>> searchPlaylists(
+            @RequestParam String query,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDir) {
+        Sort sort = Sort.by(sortDir.equalsIgnoreCase("asc") ? Sort.Order.asc(sortBy) : Sort.Order.desc(sortBy));
+        Pageable pageable = PageRequest.of(page, size, sort);
+        return ResponseEntity.ok(playlistService.searchPlaylists(query, pageable));
+    }
+
+    // Share playlist
+    @GetMapping("/{id}/share")
+    public ResponseEntity<String> sharePlaylist(@PathVariable Long id) {
+        return ResponseEntity.ok(playlistService.sharePlaylist(id));
     }
 }

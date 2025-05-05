@@ -7,6 +7,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "song_playlist")
@@ -27,7 +30,9 @@ public class SongPlaylist {
     @JoinColumn(name = "playlist_id", nullable = false)
     private Playlist playlist;
 
-    private Integer position; // Position of the song in the playlist
+    @CreationTimestamp
+    @Column(name = "added_at", updatable = false)
+    private LocalDateTime addedAt;
 
     // Constructors, getters, and setters are handled by Lombok
 }

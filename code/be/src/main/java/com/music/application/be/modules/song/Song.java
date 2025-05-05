@@ -1,16 +1,15 @@
 package com.music.application.be.modules.song;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.music.application.be.modules.album.Album;
 import com.music.application.be.modules.artist.Artist;
 import com.music.application.be.modules.genre.Genre;
-import com.music.application.be.modules.user.User;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "songs")
@@ -48,11 +47,11 @@ public class Song {
     @JoinColumn(name = "artist_id", nullable = false)
     private Artist artist;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "genre_id")
-    private Genre genre;
-
-    @ManyToMany(mappedBy = "favoriteSongs")
-    @JsonIgnore
-    private Set<User> favoritedByUsers;
+    @ManyToMany
+    @JoinTable(
+            name = "song_genre",
+            joinColumns = @JoinColumn(name = "song_id"),
+            inverseJoinColumns = @JoinColumn(name = "genre_id")
+    )
+    private List<Genre> genres = new ArrayList<>();
 }

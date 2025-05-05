@@ -49,6 +49,13 @@ public class User implements UserDetails {
 
     private String avatar;
 
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
+
+    @CreationTimestamp
+    @Column(name = "updated_at", updatable = false)
+    private LocalDateTime updatedAt;
 
     @ManyToMany
     @JoinTable(
@@ -75,14 +82,6 @@ public class User implements UserDetails {
             inverseJoinColumns = @JoinColumn(name = "artist_id")
     )
     private Set<Artist> followedArtists = new HashSet<>();
-
-    @CreationTimestamp
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt;
-
-    @CreationTimestamp
-    @Column(name = "updated_at", updatable = false)
-    private LocalDateTime updatedAt;
 
 //    private String theme;
 

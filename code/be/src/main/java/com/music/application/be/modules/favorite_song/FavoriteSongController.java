@@ -1,34 +1,59 @@
 package com.music.application.be.modules.favorite_song;
 
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
 @RequestMapping("/api/favorite-songs")
-@RequiredArgsConstructor
 public class FavoriteSongController {
 
-    private final FavoriteSongService favoriteSongService;
+    @Autowired
+    private FavoriteSongService favoriteSongService;
 
+    // Add favorite song
     @PostMapping
-    public ResponseEntity<FavoriteSong> addFavoriteSong(@RequestParam Long userId, @RequestParam Long songId) {
-        return favoriteSongService.addFavoriteSong(userId, songId)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.badRequest().build());
+    public ResponseEntity<FavoriteSongDTO> addFavoriteSong(
+            @RequestParam Long userId,
+            @RequestParam Long songId) {
+        return ResponseEntity.ok(favoriteSongService.addFavoriteSong(userId, songId));
     }
 
-    @DeleteMapping
-    public ResponseEntity<Void> removeFavoriteSong(@RequestParam Long userId, @RequestParam Long songId) {
-        return favoriteSongService.removeFavoriteSong(userId, songId)
-                ? ResponseEntity.noContent().build()
-                : ResponseEntity.notFound().build();
-    }
-
+    // Get favorite songs with sorting
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<FavoriteSong>> getFavoriteSongs(@PathVariable Long userId) {
-        return ResponseEntity.ok(favoriteSongService.getFavoriteSongs(userId));
+    public ResponseEntity<Page<FavoriteSongDTO>> getFavoriteSongs(
+            @PathVariable Long userId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "addedAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDir) {
+        Sort sort = Sort.by(sortDir.equalsIgnoreCase("asc") ? Sort.Order.asc(sortBy) : Sort.Order.desc(sortBy));
+        Pageable pageable = PageRequest.of(page, size, sort);
+        return ResponseEntity.ok(favoriteSongService.getFavoriteSongs(userId, pageable));
+    }
+
+    // Search favorite songs with sorting
+    @GetMapping("/user/{userId}/search")
+    public ResponseEntity<Page<FavoriteSongDTO>> searchFavoriteSongs(
+            @PathVariable Long userId,
+            @RequestParam String query,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "addedAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDir) {
+        Sort sort = Sort.by(sortDir.equalsIgnoreCase("asc") ? Sort.Order.asc(sortBy) : Sort.Order.desc(sortBy));
+        Pageable pageable = PageRequest.of(page, size, sort);
+        return ResponseEntity.ok(favoriteSongService.searchFavoriteSongs(userId, query, pageable));
+    }
+
+    // Remove favorite song
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> removeFavoriteSong(@PathVariable Long id) {
+        favoriteSongService.removeFavoriteSong(id);
+        return ResponseEntity.ok().build();
     }
 }
