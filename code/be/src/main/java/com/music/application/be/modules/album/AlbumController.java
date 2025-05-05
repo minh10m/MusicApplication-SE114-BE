@@ -1,9 +1,5 @@
 package com.music.application.be.modules.album;
 
-import com.music.application.be.modules.album.AlbumDTO;
-import com.music.application.be.modules.song.Song;
-import com.music.application.be.modules.song.SongDTO;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;

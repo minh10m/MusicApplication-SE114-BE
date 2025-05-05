@@ -63,14 +63,12 @@ public class ArtistService {
         artist.setFollowerCount(artistDTO.getFollowerCount());
 
         // Cập nhật danh sách album
-        if (artistDTO.getAlbumIds() != null) {
+        if (artistDTO.getAlbumIds() != null && !artistDTO.getAlbumIds().isEmpty()) {
             List<Album> albums = albumRepository.findAllById(artistDTO.getAlbumIds());
             if (albums.size() != artistDTO.getAlbumIds().size()) {
                 throw new RuntimeException("One or more albums not found");
             }
             artist.setAlbums(albums);
-        } else {
-            artist.setAlbums(null);
         }
 
         Artist updatedArtist = artistRepository.save(artist);
