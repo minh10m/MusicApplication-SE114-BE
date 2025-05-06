@@ -29,6 +29,7 @@ import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
@@ -39,6 +40,9 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldColors
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -59,10 +63,17 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
+import com.example.musicapplicationse114.MainViewModel
 import com.example.musicapplicationse114.R
+import com.example.musicapplicationse114.Screen
+import com.example.musicapplicationse114.common.enum.LoadStatus
 
 @Composable
-fun SignUpScreen() {
+fun SignUpScreen(navController: NavController, viewModel: SignUpViewModel, mainViewModel: MainViewModel) {
+    val state = viewModel.uiState.collectAsState()
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = Color.Black
@@ -74,183 +85,153 @@ fun SignUpScreen() {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Top // Top để mình kiểm soát thứ tự dễ hơn
         ) {
-            Spacer(modifier = Modifier.height(80.dp)) // Cách lề trên
+            if(state.value.status is LoadStatus.Loading){
+                CircularProgressIndicator()
+            }
+            else if(state.value.status is LoadStatus.Success){
+                LaunchedEffect(Unit) {
+                    navController.navigate(Screen.Login.route)
+                }
+            }
+            else {
+                if(state.value.status is LoadStatus.Error){
+                    mainViewModel.setError(state.value.status.description)
+                    viewModel.reset()
+                }
+                Spacer(modifier = Modifier.height(80.dp)) // Cách lề trên
 
-            // Logo
-            Image(
-                painter = painterResource(id = R.drawable.musico_with_icons),
-                contentDescription = "Musico logo with icons",
-                modifier = Modifier
-                    .size(width = 214.dp, height = 74.dp)
-            )
-
-            Spacer(modifier = Modifier.height(70.dp)) // Khoảng cách dưới logo
-
-            // Login Text
-            Row()
-            {
-                Text(
-                    text = "Create Account",
-                    fontSize = 33.sp,
-                    color = Color.White,
-                    fontWeight = FontWeight.Bold,
-                    fontFamily = FontFamily.Serif
+                // Logo
+                Image(
+                    painter = painterResource(id = R.drawable.musico_with_icons),
+                    contentDescription = "Musico logo with icons",
+                    modifier = Modifier
+                        .size(width = 214.dp, height = 74.dp)
                 )
 
-                Spacer(modifier = Modifier.width(5.dp))
+                Spacer(modifier = Modifier.height(70.dp)) // Khoảng cách dưới logo
 
-                // Icon
-//                Icon(
-//                    imageVector = Icons.Filled.AccountCircle,
-//                    contentDescription = "AccountCircle",
-//                    modifier = Modifier.size(35.dp),
-//                    tint = Color.White
-//                )
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Sign in Text
-            Text(
-                text = "Please sign up to continue.",
-                fontSize = 20.sp,
-                color = Color.Gray
-            )
-
-            Spacer(modifier = Modifier.height(60.dp))
-
-            FullName()
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            Email()
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            Password()
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            ConfirmPassword()
-
-            Spacer(modifier = Modifier.height(28.dp))
-
-            Button(onClick = {}) {
-                Row {
-                    Text("Sign Up",
-                        fontSize = 20.sp)
+                // Login Text
+                Row()
+                {
+                    Text(
+                        text = "Create Account",
+                        fontSize = 33.sp,
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = FontFamily.Serif
+                    )
 
                     Spacer(modifier = Modifier.width(5.dp))
 
-                    Icon(Icons.Filled.ArrowForward, contentDescription = null)
                 }
-            }
 
-            Spacer(modifier = Modifier.height(50.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
-            Row (verticalAlignment = Alignment.CenterVertically){
-                Text("Already have an account?",
+                // Sign up Text
+                Text(
+                    text = "Please sign up to continue.",
                     fontSize = 20.sp,
-                    color = Color.Gray)
-                Spacer(modifier = Modifier.width(1.5.dp))
-                TextButton(onClick = {}) {Text("Sign In",
-                    fontSize = 22.sp) }
+                    color = Color.Gray
+                )
+
+                Spacer(modifier = Modifier.height(60.dp))
+
+                //username
+                TextField(
+                    value = state.value.username, onValueChange = {
+                        viewModel.updateUsername(it)},
+                    label = {Text("Username")},
+                    leadingIcon = {Icon(Icons.Filled.Face, contentDescription = null)},
+                    modifier = Modifier
+                        .shadow(25.dp, shape = RoundedCornerShape(20.dp), )
+                )
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                TextField(
+                    value = state.value.email, onValueChange = { viewModel.updateEmail(it)
+                    },
+                    label = {Text("Email")},
+                    leadingIcon = {Icon(Icons.Filled.Person, contentDescription = null)},
+                    modifier = Modifier
+                        .shadow(25.dp, shape = RoundedCornerShape(20.dp), )
+                )
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                TextField(
+                    value = state.value.password, onValueChange = {viewModel.updatePassword(it)},
+                    label = {Text("Password")},
+                    visualTransformation = if(state.value.isShowPassword) VisualTransformation.None
+                    else PasswordVisualTransformation(),
+                    leadingIcon = {Icon(Icons.Filled.Lock, contentDescription = null)},
+                    trailingIcon = { IconButton(onClick = {state.value.isShowPassword = !state.value.isShowPassword}){
+                        Icon(imageVector = if(state.value.isShowPassword) Icons.Filled.CheckCircle else Icons.Filled.Check,
+                            contentDescription = null)
+                    } },
+                    modifier = Modifier.shadow(25.dp, shape = RoundedCornerShape(20.dp))
+                )
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                TextField(
+                    value = state.value.confirmPassword, onValueChange = {viewModel.updateConfirmPassword(it)},
+                    label = {Text("Confirm Password")},
+                    visualTransformation = if(state.value.isShowConfirmPassword) VisualTransformation.None
+                    else PasswordVisualTransformation(),
+                    leadingIcon = {Icon(Icons.Filled.Lock, contentDescription = null)},
+                    trailingIcon = { IconButton(onClick = {state.value.isShowConfirmPassword = !state.value.isShowConfirmPassword}){
+                        Icon(imageVector = if(state.value.isShowConfirmPassword) Icons.Filled.CheckCircle else Icons.Filled.Check,
+                            contentDescription = null)
+                    } },
+                    modifier = Modifier.shadow(25.dp, shape = RoundedCornerShape(20.dp))
+                )
+
+                Spacer(modifier = Modifier.height(28.dp))
+
+                //Sign up button
+                Button(onClick = {viewModel.signUp()}) {
+                    Row {
+                        Text(
+                            "Sign Up",
+                            fontSize = 20.sp
+                        )
+
+                        Spacer(modifier = Modifier.width(5.dp))
+
+                        Icon(Icons.Filled.ArrowForward, contentDescription = null)
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(50.dp))
+
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        "Already have an account?",
+                        fontSize = 20.sp,
+                        color = Color.Gray
+                    )
+                    Spacer(modifier = Modifier.width(1.5.dp))
+                    TextButton(onClick = {navController.navigate(Screen.Login.route)}) {
+                        Text(
+                            "Sign In",
+                            fontSize = 22.sp
+                        )
+                    }
+                }
             }
 
         }
     }
 }
 
-@Composable
-fun Email()
-{
-    var text by remember { mutableStateOf("") }
-    //val focusRequester = FocusRequester()
-    TextField(
-        value = text, onValueChange = {
-            text = it },
-        label = {Text("Account")},
-        leadingIcon = {Icon(Icons.Filled.Person, contentDescription = null)},
-//        trailingIcon = { IconButton(onClick = {text = "";focusRequester.requestFocus()}){
-//            Icon(Icons.Filled.Clear, contentDescription = null)
-//        } },
-        modifier = Modifier
-            .shadow(25.dp, shape = RoundedCornerShape(20.dp), )
-    )
-}
-
-@Composable
-fun FullName()
-{
-    var text by remember { mutableStateOf("") }
-    //val focusRequester = FocusRequester()
-    TextField(
-        value = text, onValueChange = {
-            text = it },
-        label = {Text("Full Name")},
-        leadingIcon = {Icon(Icons.Filled.Face, contentDescription = null)},
-//        trailingIcon = { IconButton(onClick = {text = "";focusRequester.requestFocus()}){
-//            Icon(Icons.Filled.Clear, contentDescription = null)
-//        } },
-        modifier = Modifier
-            .shadow(25.dp, shape = RoundedCornerShape(20.dp), )
-    )
-}
-
-fun Icon(imageVector: Unit) {
-
-}
-
-@Composable
-fun Password()
-{
-    var text by remember { mutableStateOf("") }
-    //val focusRequester = FocusRequester()
-    var isShowPassword by remember { mutableStateOf(false) }
-    TextField(
-        value = text, onValueChange = {
-            text = it },
-        label = {Text("Password")},
-        visualTransformation = if(isShowPassword) VisualTransformation.None
-        else PasswordVisualTransformation(),
-        leadingIcon = {Icon(Icons.Filled.Lock, contentDescription = null)},
-        trailingIcon = { IconButton(onClick = {isShowPassword = !isShowPassword}){
-            Icon(imageVector = if(isShowPassword) Icons.Filled.CheckCircle else Icons.Filled.Check,
-                contentDescription = null)
-        } },
-        modifier = Modifier.shadow(25.dp, shape = RoundedCornerShape(20.dp))
-    )
-}
-
-@Composable
-fun ConfirmPassword()
-{
-    var text by remember { mutableStateOf("") }
-    //val focusRequester = FocusRequester()
-    var isShowPassword by remember { mutableStateOf(false) }
-    TextField(
-        value = text, onValueChange = {
-            text = it },
-        label = {Text("Confirm Password")},
-        visualTransformation = if(isShowPassword) VisualTransformation.None
-        else PasswordVisualTransformation(),
-        leadingIcon = {Icon(Icons.Filled.Lock, contentDescription = null)},
-        trailingIcon = { IconButton(onClick = {isShowPassword = !isShowPassword}){
-            Icon(imageVector = if(isShowPassword) Icons.Filled.CheckCircle else Icons.Filled.Check,
-                contentDescription = null)
-        } },
-        modifier = Modifier.shadow(25.dp, shape = RoundedCornerShape(20.dp))
-    )
-}
-fun TextField() {
-    TODO("Not yet implemented")
-}
 
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun SignUpScreenPreview()
 {
-    SignUpScreen()
+    val navController = rememberNavController()
+    SignUpScreen(navController = navController, viewModel = SignUpViewModel(null, null), mainViewModel = MainViewModel())
 }
 
 

@@ -20,19 +20,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
+import com.example.musicapplicationse114.MainViewModel
 import com.example.musicapplicationse114.R
 
-//class MainActivity : ComponentActivity() {
-//    override fun onCreate(savedInstanceState: Bundle?) {
-//        super.onCreate(savedInstanceState)
-//        setContent {
-//            StartScreen()
-//        }
-//    }
-//}
-
 @Composable
-fun StartScreen() {
+fun StartScreen(navController: NavController, viewModel: StartViewModel, mainViewModel: MainViewModel) {
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = Color.Black
@@ -59,8 +53,8 @@ fun StartScreen() {
                 text = "Just keep on vibin’",
                 fontSize = 16.sp,
                 modifier = Modifier
-                    .offset(x = 2.dp, y = 55.dp)
-                    .size(width = /*170.dp*/ 150.dp, height = 90.dp),
+                    .offset(x = 26.dp, y = 55.dp)
+                    .size(width = /*170.dp*/ 200.dp, height = 90.dp),
                 color = Color(0xFFB0B0B0)
             )
 
@@ -68,7 +62,7 @@ fun StartScreen() {
 
             // Sign Up Button
             Button(
-                onClick = { /* TODO */ },
+                onClick = { viewModel.navToSignUpScreen(navController) },
                 modifier = Modifier
                     .offset(x = 1.dp, y = -40.dp)
                     .size(width = 325.dp, height = 62.dp),
@@ -82,23 +76,15 @@ fun StartScreen() {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Phone Button
+            // Login Button
             OutlinedButton(
-                onClick = { /* TODO */ },
+                onClick = { viewModel.navToLoginScreen(navController) },
                 modifier = Modifier
                     .offset(x = 1.dp, y = -40.dp)
                     .size(width = 325.dp, height = 62.dp),
                 shape = RoundedCornerShape(24.dp),
                 border = BorderStroke(1.dp, Color.White)
             ) {
-//                Icon(
-//                    imageVector = Icons.Filled.Phone,
-//                    contentDescription = "Phone",
-//                    modifier = Modifier
-//                        .size(28.dp)
-//                        .offset(x = -15.dp),
-//                    tint = Color.White
-//                )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text("Login",
                     modifier = Modifier
@@ -107,46 +93,7 @@ fun StartScreen() {
                     color = Color.White)
             }
 
-//            Spacer(modifier = Modifier.height(16.dp))
-//
-//            // Google Button
-//            OutlinedButton(
-//                onClick = { /* TODO */ },
-//                modifier = Modifier
-//                    .offset(x = 1.dp, y = -40.dp)
-//                    .size(width = 325.dp, height = 62.dp),
-//                shape = RoundedCornerShape(24.dp),
-//                border = BorderStroke(1.dp, Color.White)
-//            ) {
-//                Image(
-//                    painter = painterResource(id = R.drawable.google_logo),
-//                    contentDescription = "Google Logo",
-//                    modifier = Modifier
-//                        .offset(x = -43.dp)
-//                        .size(30.dp)
-//                )
-//                Spacer(modifier = Modifier.width(8.dp))
-//                Text("Continue with Google",
-//                    modifier = Modifier
-//                        .offset(x = -20.dp)
-//                    ,color = Color.White
-//                    ,fontSize = 16.sp
-//                )
-//            }
-//
-//            Spacer(modifier = Modifier.height(24.dp))
-//
-//            Text(
-//                text = "Log in",
-//                fontSize = 16.sp,
-//                modifier = Modifier
-//                    .offset(y = -32.dp)
-//                    .clickable { /*TODO*/ },
-//                color = Color(0xFFB0B0B0),
-//                fontWeight = FontWeight.Bold
-//            )
-
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(80.dp))
         }
     }
 }
@@ -154,5 +101,6 @@ fun StartScreen() {
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun StartScreenPreview() {
-    StartScreen()
+    val navController = rememberNavController()
+    StartScreen(navController = navController, viewModel = StartViewModel(null, null), mainViewModel = MainViewModel())
 }

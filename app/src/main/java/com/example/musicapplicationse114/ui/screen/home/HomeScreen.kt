@@ -25,6 +25,7 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -36,10 +37,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
+import com.example.musicapplicationse114.MainViewModel
 import com.example.musicapplicationse114.R
+import com.example.musicapplicationse114.Screen
 
 @Composable
-fun HomeScreen()
+fun HomeScreen(navController: NavHostController, viewModel: HomeViewModel, mainViewModel: MainViewModel)
 {
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -54,7 +59,7 @@ fun HomeScreen()
             Spacer(modifier = Modifier.height(50.dp))
             HelloLine()
             Spacer(modifier = Modifier.height(30.dp))
-            TabBar()
+            TabBar(navController)
             Spacer(modifier = Modifier.height(30.dp))
             FeaturingToday()
             Spacer(modifier = Modifier.height(18.dp))
@@ -128,7 +133,7 @@ fun HelloLine()
 @Composable
 //ở cái này thì gồm các tab để chuyển sang các pager khác nhau
 //chưa làm chủ yếu bây giờ demo UI trước
-fun TabBar()
+fun TabBar(navController: NavHostController)
 {
     //gồm dòng chữ For you...
     //Cố định trên mành hình không bị mất đi khi scroll dọc
@@ -136,12 +141,14 @@ fun TabBar()
         Box (modifier = Modifier.
         background(color = Color.DarkGray,
             shape = RoundedCornerShape(18.dp))
-            .padding(horizontal = 18.dp, vertical = 8.dp)
+            .padding(horizontal = 10.dp, vertical = 5.dp)
         ){
-            Text("For you",
+            TextButton(onClick = {navController.navigate(Screen.Login.route)}) {Text(
+                "For you",
                 fontSize = 19.sp,
                 color = Color.LightGray
             )
+            }
         }
         Spacer(modifier = Modifier.width(25.dp))
         Text("Relax",
@@ -242,5 +249,6 @@ fun NavigationBar()
 @Composable
 fun HomeScreenPreview()
 {
-    HomeScreen()
+    val navController = rememberNavController()
+    HomeScreen(navController = navController, viewModel = HomeViewModel(null, null), mainViewModel = MainViewModel())
 }
