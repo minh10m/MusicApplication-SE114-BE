@@ -1,6 +1,7 @@
 package com.music.application.be.modules.search_history;
 
-import com.music.application.be.modules.user.MyUser;
+
+import com.music.application.be.modules.user.User;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -22,7 +23,7 @@ public class SearchHistory {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
-    private MyUser user;
+    private User user;
 
     @Column(nullable = false)
     private String query;

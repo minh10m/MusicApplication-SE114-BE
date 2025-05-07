@@ -2,8 +2,8 @@ package com.music.application.be.modules.downloaded_song;
 
 import com.music.application.be.modules.song.Song;
 import com.music.application.be.modules.song.SongRepository;
-import com.music.application.be.modules.user.MyUser;
-import com.music.application.be.modules.user.MyUserRepository;
+import com.music.application.be.modules.user.User;
+import com.music.application.be.modules.user.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,14 +18,14 @@ public class DownloadedSongService {
     private DownloadedSongRepository downloadedSongRepository;
 
     @Autowired
-    private MyUserRepository userRepository;
+    private UserRepository userRepository;
 
     @Autowired
     private SongRepository songRepository;
 
     // Add downloaded song
     public DownloadedSongDTO addDownloadedSong(Long userId, Long songId) {
-        MyUser user = userRepository.findById(userId)
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         Song song = songRepository.findById(songId)
                 .orElseThrow(() -> new RuntimeException("Song not found"));

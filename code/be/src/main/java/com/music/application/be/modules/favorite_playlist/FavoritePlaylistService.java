@@ -3,8 +3,8 @@ package com.music.application.be.modules.favorite_playlist;
 import com.music.application.be.modules.favorite_playlist.FavoritePlaylist;
 import com.music.application.be.modules.playlist.Playlist;
 import com.music.application.be.modules.playlist.PlaylistRepository;
-import com.music.application.be.modules.user.MyUser;
-import com.music.application.be.modules.user.MyUserRepository;
+import com.music.application.be.modules.user.User;
+import com.music.application.be.modules.user.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -19,14 +19,14 @@ public class FavoritePlaylistService {
     private FavoritePlaylistRepository favoritePlaylistRepository;
 
     @Autowired
-    private MyUserRepository userRepository;
+    private UserRepository userRepository;
 
     @Autowired
     private PlaylistRepository playlistRepository;
 
     // Add favorite playlist
     public FavoritePlaylistDTO addFavoritePlaylist(Long userId, Long playlistId) {
-        MyUser user = userRepository.findById(userId)
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         Playlist playlist = playlistRepository.findById(playlistId)
                 .orElseThrow(() -> new RuntimeException("Playlist not found"));

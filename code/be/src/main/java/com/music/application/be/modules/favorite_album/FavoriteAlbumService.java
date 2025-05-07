@@ -2,8 +2,8 @@ package com.music.application.be.modules.favorite_album;
 
 import com.music.application.be.modules.album.Album;
 import com.music.application.be.modules.album.AlbumRepository;
-import com.music.application.be.modules.user.MyUser;
-import com.music.application.be.modules.user.MyUserRepository;
+import com.music.application.be.modules.user.User;
+import com.music.application.be.modules.user.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,14 +18,14 @@ public class FavoriteAlbumService {
     private FavoriteAlbumRepository favoriteAlbumRepository;
 
     @Autowired
-    private MyUserRepository userRepository;
+    private UserRepository userRepository;
 
     @Autowired
     private AlbumRepository albumRepository;
 
     // Add favorite album
     public FavoriteAlbumDTO addFavoriteAlbum(Long userId, Long albumId) {
-        MyUser user = userRepository.findById(userId)
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         Album album = albumRepository.findById(albumId)
                 .orElseThrow(() -> new RuntimeException("Album not found"));
