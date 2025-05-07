@@ -55,6 +55,16 @@ class SignUpViewModel @Inject constructor(
 
     }
 
+    fun changIsShowPassword()
+    {
+        _uiState.value = _uiState.value.copy(isShowPassword = !_uiState.value.isShowPassword)
+
+    }
+
+    fun changIsShowConfirmPassword(){
+        _uiState.value = _uiState.value.copy(isShowConfirmPassword = !_uiState.value.isShowConfirmPassword)
+    }
+
     fun signUp()
     {
         viewModelScope.launch {

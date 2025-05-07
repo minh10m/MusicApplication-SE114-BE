@@ -86,7 +86,11 @@ fun SignUpScreen(navController: NavController, viewModel: SignUpViewModel, mainV
             verticalArrangement = Arrangement.Top // Top để mình kiểm soát thứ tự dễ hơn
         ) {
             if(state.value.status is LoadStatus.Loading){
-                CircularProgressIndicator()
+                Box(modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center)
+                {
+                    CircularProgressIndicator()
+                }
             }
             else if(state.value.status is LoadStatus.Success){
                 LaunchedEffect(Unit) {
@@ -165,7 +169,7 @@ fun SignUpScreen(navController: NavController, viewModel: SignUpViewModel, mainV
                     visualTransformation = if(state.value.isShowPassword) VisualTransformation.None
                     else PasswordVisualTransformation(),
                     leadingIcon = {Icon(Icons.Filled.Lock, contentDescription = null)},
-                    trailingIcon = { IconButton(onClick = {state.value.isShowPassword = !state.value.isShowPassword}){
+                    trailingIcon = { IconButton(onClick = {viewModel.changIsShowPassword()}){
                         Icon(imageVector = if(state.value.isShowPassword) Icons.Filled.CheckCircle else Icons.Filled.Check,
                             contentDescription = null)
                     } },
@@ -180,7 +184,7 @@ fun SignUpScreen(navController: NavController, viewModel: SignUpViewModel, mainV
                     visualTransformation = if(state.value.isShowConfirmPassword) VisualTransformation.None
                     else PasswordVisualTransformation(),
                     leadingIcon = {Icon(Icons.Filled.Lock, contentDescription = null)},
-                    trailingIcon = { IconButton(onClick = {state.value.isShowConfirmPassword = !state.value.isShowConfirmPassword}){
+                    trailingIcon = { IconButton(onClick = {viewModel.changIsShowConfirmPassword()}){
                         Icon(imageVector = if(state.value.isShowConfirmPassword) Icons.Filled.CheckCircle else Icons.Filled.Check,
                             contentDescription = null)
                     } },

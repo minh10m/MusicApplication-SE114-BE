@@ -85,7 +85,11 @@ fun LoginScreen(navController: NavHostController, viewModel: LoginViewModel, mai
         ) {
             if(state.value.status is LoadStatus.Loading)
             {
-                CircularProgressIndicator()
+                Box(modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center)
+                {
+                    CircularProgressIndicator()
+                }
             }
             else if(state.value.status is LoadStatus.Success)
             {
@@ -167,7 +171,7 @@ fun LoginScreen(navController: NavHostController, viewModel: LoginViewModel, mai
                     leadingIcon = { Icon(Icons.Filled.Lock, contentDescription = null) },
                     trailingIcon = {
                         IconButton(onClick = {
-                            state.value.isShowPassword = !state.value.isShowPassword
+                            viewModel.changeIsShowPassword()
                         }) {
                             Icon(
                                 imageVector = if (state.value.isShowPassword) Icons.Filled.CheckCircle else Icons.Filled.Check,

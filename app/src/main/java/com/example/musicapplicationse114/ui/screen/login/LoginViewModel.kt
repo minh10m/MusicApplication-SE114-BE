@@ -41,6 +41,10 @@ class LoginViewModel @Inject constructor(
         _uiState.value = _uiState.value.copy(status = LoadStatus.Init())
     }
 
+    fun changeIsShowPassword()
+    {
+        _uiState.value = _uiState.value.copy(isShowPassword = !_uiState.value.isShowPassword)
+    }
     fun login()
     {
         viewModelScope.launch {
