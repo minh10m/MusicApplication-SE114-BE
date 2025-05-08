@@ -21,7 +21,8 @@ sealed class Screen(val route: String, val title: String) {
         object Login : Screen("login", "Login")
         object SignUp : Screen("signup", "Sign Up")
         object Detail : Screen("detail", "Detail")
-            object Start : Screen("start", "Start")
+        object Start : Screen("start", "Start")
+        object Search : Screen("search", "Search")
 }
 
 @Composable
