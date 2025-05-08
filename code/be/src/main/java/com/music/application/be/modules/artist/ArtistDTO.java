@@ -20,6 +20,4 @@ public class ArtistDTO {
     private String description;
 
     private int followerCount;
-
-    private List<Long> albumIds; // Giữ albumIds để hỗ trợ lấy danh sách album
 }

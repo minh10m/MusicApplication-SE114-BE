@@ -20,6 +20,5 @@ public class PlaylistDTO {
 
     private LocalDateTime createdAt;
 
-    private List<Long> songIds;
     private List<Long> genreIds;
 }

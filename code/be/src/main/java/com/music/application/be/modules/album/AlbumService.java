@@ -95,7 +95,6 @@ public class AlbumService {
         dto.setCoverImage(album.getCoverImage());
         dto.setDescription(album.getDescription());
         dto.setArtistId(album.getArtist().getId());
-        dto.setSongIds(album.getSongs().stream().map(Song::getId).collect(Collectors.toList()));
         return dto;
     }
 }

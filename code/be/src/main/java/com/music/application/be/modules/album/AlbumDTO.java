@@ -23,6 +23,4 @@ public class AlbumDTO {
     private String description;
 
     private Long artistId;
-
-    private List<Long> songIds;
 }

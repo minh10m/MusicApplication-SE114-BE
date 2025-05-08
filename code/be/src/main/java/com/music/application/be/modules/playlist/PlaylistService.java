@@ -118,6 +118,7 @@ public class PlaylistService {
     public void deletePlaylist(Long id) {
         Playlist playlist = playlistRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Playlist not found"));
+
         playlistRepository.delete(playlist);
     }
 
@@ -140,7 +141,6 @@ public class PlaylistService {
         dto.setCreatedAt(playlist.getCreatedAt());
         dto.setGenreIds(playlist.getGenres().stream().map(Genre::getId).collect(Collectors.toList()));
         List<SongPlaylist> songPlaylists = songPlaylistRepository.findByPlaylistIdOrderByAddedAtDesc(playlist.getId());
-        dto.setSongIds(songPlaylists.stream().map(sp -> sp.getSong().getId()).collect(Collectors.toList()));
         return dto;
     }
 }

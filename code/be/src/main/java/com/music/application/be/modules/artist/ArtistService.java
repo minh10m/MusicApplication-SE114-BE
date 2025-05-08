@@ -27,15 +27,6 @@ public class ArtistService {
         artist.setDescription(artistDTO.getDescription());
         artist.setFollowerCount(artistDTO.getFollowerCount());
 
-        // Liên kết các album nếu có
-        if (artistDTO.getAlbumIds() != null && !artistDTO.getAlbumIds().isEmpty()) {
-            List<Album> albums = albumRepository.findAllById(artistDTO.getAlbumIds());
-            if (albums.size() != artistDTO.getAlbumIds().size()) {
-                throw new RuntimeException("One or more albums not found");
-            }
-            artist.setAlbums(albums);
-        }
-
         Artist savedArtist = artistRepository.save(artist);
         return mapToDTO(savedArtist);
     }
@@ -61,15 +52,6 @@ public class ArtistService {
         artist.setAvatar(artistDTO.getAvatar());
         artist.setDescription(artistDTO.getDescription());
         artist.setFollowerCount(artistDTO.getFollowerCount());
-
-        // Cập nhật danh sách album
-        if (artistDTO.getAlbumIds() != null && !artistDTO.getAlbumIds().isEmpty()) {
-            List<Album> albums = albumRepository.findAllById(artistDTO.getAlbumIds());
-            if (albums.size() != artistDTO.getAlbumIds().size()) {
-                throw new RuntimeException("One or more albums not found");
-            }
-            artist.setAlbums(albums);
-        }
 
         Artist updatedArtist = artistRepository.save(artist);
         return mapToDTO(updatedArtist);
@@ -100,8 +82,6 @@ public class ArtistService {
         dto.setAvatar(artist.getAvatar());
         dto.setDescription(artist.getDescription());
         dto.setFollowerCount(artist.getFollowerCount());
-        dto.setAlbumIds(artist.getAlbums() != null ?
-                artist.getAlbums().stream().map(Album::getId).collect(Collectors.toList()) : null);
         return dto;
     }
 }
