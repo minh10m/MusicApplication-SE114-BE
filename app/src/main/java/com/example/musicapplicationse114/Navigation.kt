@@ -1,5 +1,6 @@
 package com.example.musicapplicationse114
 
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -77,9 +78,10 @@ fun Navigation() {
             )) {
             backStackEntry ->
                 val username = backStackEntry.arguments?.getString("username") ?: ""
+                Log.i("usernameNavigation", username)
                 val timeOfDayStr = backStackEntry.arguments?.getString("timeOfDay") ?: "Morning"
                 val timeOfDay = TimeOfDay.valueOf(timeOfDayStr)
-            HomeScreen(navController = navController, viewModel = hiltViewModel(), mainViewModel)
+            HomeScreen(navController = navController, viewModel = hiltViewModel(), mainViewModel, username = username)
         }
 
 

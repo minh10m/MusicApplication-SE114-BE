@@ -74,16 +74,16 @@ import com.example.musicapplicationse114.ui.screen.home.HomeViewModel
 @Composable
 fun LoginScreen(navController: NavHostController, viewModel: LoginViewModel, mainViewModel: MainViewModel, homeViewModel: HomeViewModel) {
     val state = viewModel.uiState.collectAsState()
-                LaunchedEffect(state.value.status) {
-                    when (val status = state.value.status) {
-                        is LoadStatus.Success -> {
-                            homeViewModel.setTimeOfDay()
-                            homeViewModel.loadAlbum()
-                            homeViewModel.loadSong()
-                            homeViewModel.loadRecentPlayed()
-                            homeViewModel.updateUserName(viewModel.getUserName())
 
-                            
+
+    LaunchedEffect(state.value.status) {
+        when (val status = state.value.status) {
+            is LoadStatus.Success -> {
+                homeViewModel.setTimeOfDay()
+                homeViewModel.loadAlbum()
+                homeViewModel.loadSong()
+                homeViewModel.loadRecentPlayed()
+                homeViewModel.updateUserName(viewModel.getUserName())
                 val username = viewModel.getUserName()
                 val timeOfDay = homeViewModel.getTimeOfDay().name
                 navController.navigate("home?username=$username&timeOfDay=$timeOfDay"){

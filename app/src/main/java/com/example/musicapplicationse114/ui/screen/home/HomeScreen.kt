@@ -49,13 +49,13 @@ import com.example.musicapplicationse114.Screen
 import com.example.musicapplicationse114.common.enum.TimeOfDay
 
 @Composable
-fun HomeScreen(navController: NavHostController, viewModel: HomeViewModel, mainViewModel: MainViewModel)
+fun HomeScreen(navController: NavHostController, viewModel: HomeViewModel, mainViewModel: MainViewModel, username: String)
 {
     val state = viewModel.uiState.collectAsState()
 
     LaunchedEffect(Unit) {
         viewModel.setTimeOfDay()
-        viewModel.updateUserName(viewModel.getUserName())
+        viewModel.updateUserName(username)
         Log.i("username", viewModel.getUserName())
         Log.i("timeOfDay", viewModel.getTimeOfDay().toString())
     }
@@ -252,5 +252,6 @@ fun NavigationBar()
 fun HomeScreenPreview()
 {
     val navController = rememberNavController()
-    HomeScreen(navController = navController, viewModel = HomeViewModel(null, null), mainViewModel = MainViewModel())
+    val username = ""
+    HomeScreen(navController = navController, viewModel = HomeViewModel(null, null), mainViewModel = MainViewModel(), username)
 }
