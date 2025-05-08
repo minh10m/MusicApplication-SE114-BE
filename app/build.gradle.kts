@@ -70,4 +70,8 @@ dependencies {
 
     implementation(libs.hilt.navigation.compose)
 
+    implementation (libs.threetenabp)
+
+    implementation(libs.font.awesome)
+
 }

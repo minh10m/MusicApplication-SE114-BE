@@ -1,6 +1,7 @@
 package com.example.musicapplicationse114.ui.screen.login
 
 import android.media.Image
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -68,10 +69,40 @@ import com.example.musicapplicationse114.MainViewModel
 import com.example.musicapplicationse114.R
 import com.example.musicapplicationse114.Screen
 import com.example.musicapplicationse114.common.enum.LoadStatus
+import com.example.musicapplicationse114.ui.screen.home.HomeViewModel
 
 @Composable
-fun LoginScreen(navController: NavHostController, viewModel: LoginViewModel, mainViewModel: MainViewModel) {
+fun LoginScreen(navController: NavHostController, viewModel: LoginViewModel, mainViewModel: MainViewModel, homeViewModel: HomeViewModel) {
     val state = viewModel.uiState.collectAsState()
+                LaunchedEffect(state.value.status) {
+                    when (val status = state.value.status) {
+                        is LoadStatus.Success -> {
+                            homeViewModel.setTimeOfDay()
+                            homeViewModel.loadAlbum()
+                            homeViewModel.loadSong()
+                            homeViewModel.loadRecentPlayed()
+                            homeViewModel.updateUserName(viewModel.getUserName())
+
+                            
+                val username = viewModel.getUserName()
+                val timeOfDay = homeViewModel.getTimeOfDay().name
+                navController.navigate("home?username=$username&timeOfDay=$timeOfDay"){
+                    popUpTo(Screen.Login.route){inclusive = true}
+                }
+                Log.i("username11", homeViewModel.getUserName())
+                viewModel.reset()
+            }
+
+            is LoadStatus.Error -> {
+                mainViewModel.setError(status.description)
+                viewModel.reset()
+            }
+
+            else -> {
+                // do nothing
+            }
+        }
+    }
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = Color.Black
@@ -83,138 +114,134 @@ fun LoginScreen(navController: NavHostController, viewModel: LoginViewModel, mai
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Top // Top để mình kiểm soát thứ tự dễ hơn
         ) {
-            if(state.value.status is LoadStatus.Loading)
-            {
-                Box(modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center)
-                {
-                    CircularProgressIndicator()
+            when (val status = state.value.status) {
+                is LoadStatus.Loading -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    )
+                    {
+                        CircularProgressIndicator()
+                    }
                 }
-            }
-            else if(state.value.status is LoadStatus.Success)
-            {
-                LaunchedEffect(Unit) {
-                    navController.navigate(Screen.Home.route)
+
+                is LoadStatus.Success -> {
+
                 }
-            }
-            else {
-                if(state.value.status is LoadStatus.Error)
-                {
-                    mainViewModel.setError(state.value.status.description)
-                    viewModel.reset()
-                }
-                Spacer(modifier = Modifier.height(80.dp)) // Cách lề trên
 
-                // Logo
-                Image(
-                    painter = painterResource(id = R.drawable.musico_with_icons),
-                    contentDescription = "Musico logo with icons",
-                    modifier = Modifier
-                        .size(width = 214.dp, height = 74.dp)
-                )
+                else -> {
+                    Spacer(modifier = Modifier.height(80.dp)) // Cách lề trên
 
-                Spacer(modifier = Modifier.height(100.dp)) // Khoảng cách dưới logo
-
-                // Login Text
-                Row()
-                {
-                    Text(
-                        text = "Login",
-                        fontSize = 30.sp,
-                        color = Color.White,
-                        fontWeight = FontWeight.Bold,
-                        fontFamily = FontFamily.Serif
+                    // Logo
+                    Image(
+                        painter = painterResource(id = R.drawable.musico_with_icons),
+                        contentDescription = "Musico logo with icons",
+                        modifier = Modifier
+                            .size(width = 214.dp, height = 74.dp)
                     )
 
-                    Spacer(modifier = Modifier.width(5.dp))
+                    Spacer(modifier = Modifier.height(100.dp)) // Khoảng cách dưới logo
 
-                    // Icon
-                    Icon(
-                        imageVector = Icons.Filled.AccountCircle,
-                        contentDescription = "AccountCircle",
-                        modifier = Modifier.size(35.dp),
-                        tint = Color.White
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Sign in Text
-                Text(
-                    text = "Please sign in to continue.",
-                    fontSize = 20.sp,
-                    color = Color.Gray
-                )
-
-                Spacer(modifier = Modifier.height(60.dp))
-
-                TextField(
-                    value = state.value.username, onValueChange = {
-                        viewModel.updateUsername(it)
-                    },
-                    label = { Text("Account") },
-                    leadingIcon = { Icon(Icons.Filled.Person, contentDescription = null) },
-
-                    modifier = Modifier
-                        .shadow(25.dp, shape = RoundedCornerShape(20.dp),)
-                )
-
-                Spacer(modifier = Modifier.height(20.dp))
-
-                TextField(
-                    value = state.value.password, onValueChange = {
-                        viewModel.updatePassword(it)
-                    },
-                    label = { Text("Password") },
-                    visualTransformation = if (state.value.isShowPassword) VisualTransformation.None
-                    else PasswordVisualTransformation(),
-                    leadingIcon = { Icon(Icons.Filled.Lock, contentDescription = null) },
-                    trailingIcon = {
-                        IconButton(onClick = {
-                            viewModel.changeIsShowPassword()
-                        }) {
-                            Icon(
-                                imageVector = if (state.value.isShowPassword) Icons.Filled.CheckCircle else Icons.Filled.Check,
-                                contentDescription = null
-                            )
-                        }
-                    },
-                    modifier = Modifier.shadow(25.dp, shape = RoundedCornerShape(20.dp))
-                )
-
-                Spacer(modifier = Modifier.height(28.dp))
-
-                Button(onClick = { viewModel.login() }) {
-                    Row {
+                    // Login Text
+                    Row()
+                    {
                         Text(
-                            "Sign In",
-                            fontSize = 20.sp
+                            text = "Login",
+                            fontSize = 30.sp,
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = FontFamily.Serif
                         )
 
                         Spacer(modifier = Modifier.width(5.dp))
 
-                        Icon(Icons.Filled.ArrowForward, contentDescription = null)
+                        // Icon
+                        Icon(
+                            imageVector = Icons.Filled.AccountCircle,
+                            contentDescription = "AccountCircle",
+                            modifier = Modifier.size(35.dp),
+                            tint = Color.White
+                        )
                     }
-                }
 
-                Spacer(modifier = Modifier.height(120.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
 
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                    // Sign in Text
                     Text(
-                        "Don't have an account?",
+                        text = "Please sign in to continue.",
                         fontSize = 20.sp,
                         color = Color.Gray
                     )
-                    Spacer(modifier = Modifier.width(1.5.dp))
-                    TextButton(onClick = {navController.navigate(Screen.SignUp.route)}) {
+
+                    Spacer(modifier = Modifier.height(60.dp))
+
+                    TextField(
+                        value = state.value.username, onValueChange = {
+                            viewModel.updateUsername(it)
+                        },
+                        label = { Text("Account") },
+                        leadingIcon = { Icon(Icons.Filled.Person, contentDescription = null) },
+
+                        modifier = Modifier
+                            .shadow(25.dp, shape = RoundedCornerShape(20.dp),)
+                    )
+
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    TextField(
+                        value = state.value.password, onValueChange = {
+                            viewModel.updatePassword(it)
+                        },
+                        label = { Text("Password") },
+                        visualTransformation = if (state.value.isShowPassword) VisualTransformation.None
+                        else PasswordVisualTransformation(),
+                        leadingIcon = { Icon(Icons.Filled.Lock, contentDescription = null) },
+                        trailingIcon = {
+                            IconButton(onClick = {
+                                viewModel.changeIsShowPassword()
+                            }) {
+                                Icon(
+                                    imageVector = if (state.value.isShowPassword) Icons.Filled.CheckCircle else Icons.Filled.Check,
+                                    contentDescription = null
+                                )
+                            }
+                        },
+                        modifier = Modifier.shadow(25.dp, shape = RoundedCornerShape(20.dp))
+                    )
+
+                    Spacer(modifier = Modifier.height(28.dp))
+
+                    Button(onClick = { viewModel.login() }) {
+                        Row {
+                            Text(
+                                "Sign In",
+                                fontSize = 20.sp
+                            )
+
+                            Spacer(modifier = Modifier.width(5.dp))
+
+                            Icon(Icons.Filled.ArrowForward, contentDescription = null)
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(120.dp))
+
+                    Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
-                            "Sign Up",
-                            fontSize = 22.sp
+                            "Don't have an account?",
+                            fontSize = 20.sp,
+                            color = Color.Gray
                         )
+                        Spacer(modifier = Modifier.width(1.5.dp))
+                        TextButton(onClick = { navController.navigate(Screen.SignUp.route) }) {
+                            Text(
+                                "Sign Up",
+                                fontSize = 22.sp
+                            )
+                        }
                     }
                 }
             }
-
         }
     }
 }
@@ -224,5 +251,5 @@ fun LoginScreen(navController: NavHostController, viewModel: LoginViewModel, mai
 fun LoginScreenPreview()
 {
     val navController = rememberNavController()
-    LoginScreen(navController = navController, viewModel = LoginViewModel(null, null), mainViewModel = MainViewModel())
+    LoginScreen(navController = navController, viewModel = LoginViewModel(null, null), mainViewModel = MainViewModel(), homeViewModel = HomeViewModel(null, null))
 }

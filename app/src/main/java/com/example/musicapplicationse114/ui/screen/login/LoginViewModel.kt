@@ -57,4 +57,9 @@ class LoginViewModel @Inject constructor(
             }
         }
     }
+
+    fun getUserName() : String
+    {
+        return _uiState.value.username
+    }
 }

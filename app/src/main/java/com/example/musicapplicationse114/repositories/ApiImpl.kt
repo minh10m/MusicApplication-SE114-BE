@@ -1,9 +1,15 @@
 package com.example.musicapplicationse114.repositories
 
+import com.example.musicapplicationse114.model.Album
+import com.example.musicapplicationse114.model.RecentlyPlayed
+import com.example.musicapplicationse114.model.Song
 import kotlinx.coroutines.delay
 import javax.inject.Inject
 
 class ApiImpl @Inject constructor() : Api {
+    val songs = ArrayList<Song>()
+    val albums = ArrayList<Album>()
+    val recentPlayed = ArrayList<RecentlyPlayed>()
     override suspend fun login(username: String, password: String): Boolean {
         delay(1000)
         if(username != "admin" || password != "1234")
@@ -30,6 +36,20 @@ class ApiImpl @Inject constructor() : Api {
         return true
     }
 
+    override suspend fun loadAlbums(): ArrayList<Album> {
+        delay(1000)
+        return albums
+    }
+
+    override suspend fun loadSong(): ArrayList<Song> {
+        delay(1000)
+        return songs
+    }
+
+    override suspend fun loadRecentPlayed(): ArrayList<RecentlyPlayed> {
+        delay(1000)
+        return recentPlayed
+    }
 
 
 }

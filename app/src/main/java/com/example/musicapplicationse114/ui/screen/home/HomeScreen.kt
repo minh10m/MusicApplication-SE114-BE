@@ -2,8 +2,10 @@ package com.example.musicapplicationse114.ui.screen.home
 
 import android.graphics.drawable.Icon
 import android.media.Image
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -27,6 +29,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.focusModifier
@@ -42,24 +46,118 @@ import androidx.navigation.compose.rememberNavController
 import com.example.musicapplicationse114.MainViewModel
 import com.example.musicapplicationse114.R
 import com.example.musicapplicationse114.Screen
+import com.example.musicapplicationse114.common.enum.TimeOfDay
 
 @Composable
 fun HomeScreen(navController: NavHostController, viewModel: HomeViewModel, mainViewModel: MainViewModel)
 {
+    val state = viewModel.uiState.collectAsState()
+
+    LaunchedEffect(Unit) {
+        viewModel.setTimeOfDay()
+        viewModel.updateUserName(viewModel.getUserName())
+        Log.i("username", viewModel.getUserName())
+        Log.i("timeOfDay", viewModel.getTimeOfDay().toString())
+    }
+
+    val greeting = when(state.value.timeOfDay){
+        TimeOfDay.MORNING -> "Good Morning"
+        TimeOfDay.AFTERNOON -> "Good Afternoon"
+        TimeOfDay.EVENING -> "Good Evening"
+    }
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = Color.Black
     )
     {
+        //Icon(FontAwesomeIcons.Solid.Music, contentDescription = "Library")
         Column(modifier = Modifier
             .fillMaxSize()
             .padding(start = 24.dp,
             )
         ) {
             Spacer(modifier = Modifier.height(50.dp))
-            HelloLine()
+            //gồm hi Logan, good evening, chuông và ảnh đại diện
+            //Cố định trên mành hình không bị mất đi khi scroll dọc
+            Row (verticalAlignment = Alignment.CenterVertically){
+                Column(horizontalAlignment = Alignment.Start) {
+                    Row (verticalAlignment = Alignment.CenterVertically){
+                        //Spacer(modifier = Modifier.height(20.dp))
+                        Image(
+                            painter = painterResource(id = R.drawable.hello),
+                            contentDescription = null,
+                            modifier = Modifier
+                                .size(23.dp)
+                        )
+
+                        Spacer(modifier = Modifier.width(2.dp))
+
+                        Row() {
+                            Text(
+                                "Hi ${state.value.username},",
+                                fontSize = 20.sp,
+                                color = Color.White
+                            )
+                            Log.i("username", state.value.username)
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Text(greeting,
+                        fontSize = 24.sp,
+                        color = Color.White,
+                        fontWeight = FontWeight.W700
+                    )
+                    Log.i("greeting", greeting)
+                }
+                Spacer(modifier = Modifier.width(95.dp))
+                Image(painter = painterResource(id = R.drawable.bell),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(30.dp)
+                        .clickable {
+                            //do something
+                        }
+                )
+                Spacer(modifier = Modifier.width(15.dp))
+                Image(painter = painterResource(id = R.drawable.logan),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(50.dp))
+            }
+
             Spacer(modifier = Modifier.height(30.dp))
-            TabBar(navController)
+
+            //gồm dòng chữ For you...
+            //Cố định trên mành hình không bị mất đi khi scroll dọc
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box (modifier = Modifier.
+                background(color = Color.DarkGray,
+                    shape = RoundedCornerShape(18.dp))
+                    .padding(horizontal = 10.dp, vertical = 5.dp)
+                ){
+                    TextButton(onClick = {navController.navigate(Screen.Login.route)}) {Text(
+                        "For you",
+                        fontSize = 19.sp,
+                        color = Color.LightGray
+                    )
+                    }
+                }
+                Spacer(modifier = Modifier.width(25.dp))
+                Text("Relax",
+                    fontSize = 19.sp,
+                    color = Color.LightGray
+                )
+                Spacer(modifier = Modifier.width(25.dp))
+                Text("Work out",
+                    fontSize = 19.sp,
+                    color = Color.LightGray)
+                Spacer(modifier = Modifier.width(25.dp))
+                Text("Travel",
+                    maxLines = 1,
+                    fontSize = 19.sp,
+                    color = Color.LightGray)
+            }
+
             Spacer(modifier = Modifier.height(30.dp))
             FeaturingToday()
             Spacer(modifier = Modifier.height(18.dp))
@@ -69,101 +167,9 @@ fun HomeScreen(navController: NavHostController, viewModel: HomeViewModel, mainV
                 MixedForYou()
                 NavigationBar()
             }
-//        LazyColumn {
-//            FeaturingToday()
-//            Spacer(modifier = Modifier.height(10.dp))
-//            RecentlyPlayed()
-//            Spacer(modifier = Modifier.height(10.dp))
-//            MixedForYou()
-//        }
 
         }
 
-    }
-}
-
-@Composable
-//ở cái này thì ảnh đại diện thay đổi theo profile, chưa làm
-//Còn lời chào good evening nữa
-//giờ để tạm cố định để demoUI, sau phát triển lên thêm
-fun HelloLine()
-{
-    //gồm hi Logan, good evening, chuông và ảnh đại diện
-    //Cố định trên mành hình không bị mất đi khi scroll dọc
-    Row (verticalAlignment = Alignment.CenterVertically){
-        Column(horizontalAlignment = Alignment.Start) {
-            Row (verticalAlignment = Alignment.CenterVertically){
-                //Spacer(modifier = Modifier.height(20.dp))
-                Image(
-                    painter = painterResource(id = R.drawable.hello),
-                    contentDescription = null,
-                    modifier = Modifier
-                        .size(23.dp)
-                )
-
-                Spacer(modifier = Modifier.width(2.dp))
-
-                Text("Hi Logan,",
-                    fontSize = 20.sp,
-                    color = Color.White
-                )
-            }
-            Spacer(modifier = Modifier.height(10.dp))
-            Text("Good Evening",
-                fontSize = 24.sp,
-                color = Color.White,
-                fontWeight = FontWeight.W700
-            )
-        }
-        Spacer(modifier = Modifier.width(95.dp))
-        Image(painter = painterResource(id = R.drawable.bell),
-            contentDescription = null,
-            modifier = Modifier
-                .size(30.dp)
-        )
-        Spacer(modifier = Modifier.width(15.dp))
-        Image(painter = painterResource(id = R.drawable.logan),
-            contentDescription = null,
-            modifier = Modifier
-                .size(50.dp))
-    }
-
-}
-
-@Composable
-//ở cái này thì gồm các tab để chuyển sang các pager khác nhau
-//chưa làm chủ yếu bây giờ demo UI trước
-fun TabBar(navController: NavHostController)
-{
-    //gồm dòng chữ For you...
-    //Cố định trên mành hình không bị mất đi khi scroll dọc
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Box (modifier = Modifier.
-        background(color = Color.DarkGray,
-            shape = RoundedCornerShape(18.dp))
-            .padding(horizontal = 10.dp, vertical = 5.dp)
-        ){
-            TextButton(onClick = {navController.navigate(Screen.Login.route)}) {Text(
-                "For you",
-                fontSize = 19.sp,
-                color = Color.LightGray
-            )
-            }
-        }
-        Spacer(modifier = Modifier.width(25.dp))
-        Text("Relax",
-            fontSize = 19.sp,
-            color = Color.LightGray
-        )
-        Spacer(modifier = Modifier.width(25.dp))
-        Text("Work out",
-            fontSize = 19.sp,
-            color = Color.LightGray)
-        Spacer(modifier = Modifier.width(25.dp))
-        Text("Travel",
-            maxLines = 1,
-            fontSize = 19.sp,
-            color = Color.LightGray)
     }
 }
 
@@ -179,10 +185,6 @@ fun FeaturingToday()
 }
 
 @Composable
-//Recently Played
-//hình ảnh ở đây tạm thời kéo vào android studio demo, và tạo các thành phần
-//bài hát không có tính tái sử dụng, tương lai sẽ update và link tới bài hát khi có
-//backend
 fun RecentlyPlayed()
 {
     Image(painter = painterResource(R.drawable.recent_play),
