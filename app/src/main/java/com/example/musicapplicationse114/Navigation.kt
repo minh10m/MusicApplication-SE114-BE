@@ -15,19 +15,25 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.musicapplicationse114.common.enum.LoadStatus
 import com.example.musicapplicationse114.common.enum.TimeOfDay
+import com.example.musicapplicationse114.ui.screen.detail.DetailScreen
 import com.example.musicapplicationse114.ui.screen.home.HomeScreen
 import com.example.musicapplicationse114.ui.screen.home.HomeViewModel
+import com.example.musicapplicationse114.ui.screen.library.LibraryScreen
 import com.example.musicapplicationse114.ui.screen.login.LoginScreen
 import com.example.musicapplicationse114.ui.screen.login.LoginViewModel
+import com.example.musicapplicationse114.ui.screen.search.SearchScreenStyled
+import com.example.musicapplicationse114.ui.screen.searchtype.SearchTypeScreen
 import com.example.musicapplicationse114.ui.screen.signUp.SignUpScreen
 import com.example.musicapplicationse114.ui.screen.start.StartScreen
 
 sealed class Screen(val route: String, val title: String) {
-    object Home : Screen("home?username={username}&timeOfDay={timeOfDay}", "Home")
-    object Login : Screen("login", "Login")
-    object SignUp : Screen("signup", "Sign Up")
-    object Detail : Screen("detail", "Detail")
-    object Start : Screen("start", "Start")
+        object Home : Screen("home", "Home")
+        object Login : Screen("login", "Login")
+        object SignUp : Screen("signup", "Sign Up")
+        object Detail : Screen("detail", "Detail")
+        object Start : Screen("start", "Start")
+        object Search : Screen("search", "Search")
+        object Library : Screen("library", "Library")
 }
 
 @Composable
@@ -36,10 +42,6 @@ fun Navigation() {
     val mainViewModel : MainViewModel = hiltViewModel()
     val mainState = mainViewModel.uiState.collectAsState()
     val context = LocalContext.current
-//    val loginViewModel : LoginViewModel = hiltViewModel()
-//    val loginState = loginViewModel.uiState.collectAsState()
-//    val homeViewModel : HomeViewModel = hiltViewModel()
-
     LaunchedEffect(mainState.value.error) {
         if (mainState.value.error.isNotEmpty()) {
             Toast.makeText(context, mainState.value.error, Toast.LENGTH_SHORT).show()
@@ -47,15 +49,6 @@ fun Navigation() {
         }
     }
 
-//    LaunchedEffect(loginState.value.status) {
-//        if(loginState.value.status is LoadStatus.Success) {
-//            homeViewModel.setTimeOfDay()
-//            homeViewModel.loadAlbum()
-//            homeViewModel.loadSong()
-//            homeViewModel.loadRecentPlayed()
-//            homeViewModel.updateUserName(loginViewModel.getUserName())
-//        }
-//    }
     NavHost(navController = navController, startDestination = Screen.Start.route)
     {
         composable(Screen.Start.route) {
@@ -83,7 +76,14 @@ fun Navigation() {
                 val timeOfDay = TimeOfDay.valueOf(timeOfDayStr)
             HomeScreen(navController = navController, viewModel = hiltViewModel(), mainViewModel, username = username)
         }
-
-
+        composable(Screen.Detail.route) {
+            DetailScreen()
+        }
+        composable(Screen.Search.route) {
+            SearchTypeScreen(navController = navController, viewModel = hiltViewModel(), mainViewModel)
+        }
+        composable(Screen.Library.route) {
+            LibraryScreen(navController = navController, viewModel = hiltViewModel(), mainViewModel)
+        }
     }
 }

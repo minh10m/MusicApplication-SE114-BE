@@ -12,7 +12,7 @@ class ApiImpl @Inject constructor() : Api {
     val recentPlayed = ArrayList<RecentlyPlayed>()
     override suspend fun login(username: String, password: String): Boolean {
         delay(1000)
-        if(username != "admin" || password != "1234")
+        if(username != "TuanLee" || password != "1234")
         {
             throw Exception("Invalid username or password")
         }
