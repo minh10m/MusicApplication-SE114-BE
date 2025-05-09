@@ -3,6 +3,8 @@ package com.example.musicapplicationse114.ui.screen.signUp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.musicapplicationse114.common.enum.LoadStatus
+import com.example.musicapplicationse114.common.enum.Role
+import com.example.musicapplicationse114.model.UserSignUpRequest
 import com.example.musicapplicationse114.repositories.Api
 import com.example.musicapplicationse114.repositories.MainLog
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -15,6 +17,7 @@ data class SignUpUiState(
     val username: String = "",
     val email: String = "",
     val password: String = "",
+    val successMessage: String = "",
     val confirmPassword: String = "",
     var isShowPassword: Boolean = false,
     var isShowConfirmPassword: Boolean = false,
@@ -65,12 +68,17 @@ class SignUpViewModel @Inject constructor(
         _uiState.value = _uiState.value.copy(isShowConfirmPassword = !_uiState.value.isShowConfirmPassword)
     }
 
-    fun signUp()
+    fun updateSuccessMessage(successMessage: String)
+    {
+        _uiState.value = _uiState.value.copy(successMessage = successMessage)
+    }
+
+    fun signUp1()
     {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(status = LoadStatus.Loading())
             try {
-                val result = api?.signUp(_uiState.value.username, _uiState.value.email, _uiState.value.password, _uiState.value.confirmPassword)
+                val result = api?.signUp1(_uiState.value.username, _uiState.value.email, _uiState.value.password, _uiState.value.confirmPassword)
                 _uiState.value = _uiState.value.copy(status = LoadStatus.Success())
             }catch(ex: Exception)
             {
@@ -78,4 +86,28 @@ class SignUpViewModel @Inject constructor(
             }
         }
     }
+
+    fun signUp(){
+        _uiState.value = _uiState.value.copy(status = LoadStatus.Loading())
+        viewModelScope.launch {
+            try {
+                val result = api?.signUp(UserSignUpRequest(_uiState.value.username, _uiState.value.password, _uiState.value.email, "", "", Role.USER))
+                if(result != null && result.isSuccessful){
+                    val accessToken = result.body()?.accessToken
+                    if(accessToken != null){
+                        _uiState.value = _uiState.value.copy(status = LoadStatus.Success())
+                        updateSuccessMessage(result.body()?.message.toString())
+                        //Save Token sau khi đăng nhập ở đâu đó
+                    }else{
+                        _uiState.value = _uiState.value.copy(status = LoadStatus.Error(result.body()?.message.toString()))
+                    }
+                }
+
+            }catch (ex: Exception){
+                _uiState.value = _uiState.value.copy(status = LoadStatus.Error("Sign up request failed"))
+            }
+        }
+    }
+
+
 }

@@ -50,7 +50,6 @@ fun Navigation() {
     val navController = rememberAnimatedNavController()
     val mainViewModel : MainViewModel = hiltViewModel()
     val loginViewModel : LoginViewModel = hiltViewModel()
-    val loginState = loginViewModel.uiState.collectAsState()
     val mainState = mainViewModel.uiState.collectAsState()
     val context = LocalContext.current
     LaunchedEffect(mainState.value.error) {
@@ -60,11 +59,6 @@ fun Navigation() {
         }
     }
 
-    LaunchedEffect(loginState.value.status) {
-        if(loginState.value.status is LoadStatus.Success){
-            Toast.makeText(context, loginState.value.successMessage, Toast.LENGTH_SHORT).show()
-        }
-    }
 
     AnimatedNavHost(navController = navController, startDestination = Screen.Start.route,
         enterTransition = {
@@ -73,18 +67,18 @@ fun Navigation() {
         exitTransition = {
             fadeOut(animationSpec = tween(5))
         },
-        popEnterTransition = {
-            fadeIn(animationSpec = tween(5))
-        },
-        popExitTransition = {
-            fadeOut(animationSpec = tween(5))
-        })
-    {
-        composable(Screen.Start.route) {
-            StartScreen(navController = navController, viewModel = hiltViewModel(), mainViewModel)
-        }
-        composable(Screen.Login.route) {
-            LoginScreen(navController = navController, viewModel = hiltViewModel(), mainViewModel, homeViewModel = hiltViewModel())
+                popEnterTransition = {
+                    fadeIn(animationSpec = tween(5))
+                },
+                popExitTransition = {
+                    fadeOut(animationSpec = tween(5))
+                })
+            {
+                composable(Screen.Start.route) {
+                    StartScreen(navController = navController, viewModel = hiltViewModel(), mainViewModel)
+                }
+                composable(Screen.Login.route) {
+                    LoginScreen(navController = navController, viewModel = hiltViewModel(), mainViewModel, homeViewModel = hiltViewModel())
         }
         composable(Screen.SignUp.route) {
             SignUpScreen(navController = navController, viewModel = hiltViewModel(), mainViewModel)

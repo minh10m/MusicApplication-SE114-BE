@@ -79,5 +79,8 @@ dependencies {
 
     implementation (libs.accompanist.navigation.animation.v0320)
 
+    implementation (libs.retrofit)
+    implementation (libs.converter.gson)
+
 
 }

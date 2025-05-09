@@ -10,7 +10,7 @@ class ApiImpl @Inject constructor() : Api {
     val songs = ArrayList<Song>()
     val albums = ArrayList<Album>()
     val recentPlayed = ArrayList<RecentlyPlayed>()
-    override suspend fun login(username: String, password: String): Boolean {
+    override suspend fun login1(username: String, password: String): Boolean {
         delay(2000)
         if(username != "TuanLee" || password != "1234")
         {
@@ -19,7 +19,7 @@ class ApiImpl @Inject constructor() : Api {
         return true
     }
 
-    override suspend fun signUp(
+    override suspend fun signUp1(
         username: String,
         email: String,
         password: String,

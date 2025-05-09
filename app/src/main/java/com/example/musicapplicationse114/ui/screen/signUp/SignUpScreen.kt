@@ -1,6 +1,7 @@
 package com.example.musicapplicationse114.ui.screen.signUp
 
 import android.media.Image
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -55,6 +56,7 @@ import androidx.compose.ui.focus.focusModifier
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.motionEventSpy
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -74,6 +76,7 @@ import com.example.musicapplicationse114.common.enum.LoadStatus
 @Composable
 fun SignUpScreen(navController: NavController, viewModel: SignUpViewModel, mainViewModel: MainViewModel) {
     val state = viewModel.uiState.collectAsState()
+    val context = LocalContext.current
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = Color.Black
@@ -94,7 +97,9 @@ fun SignUpScreen(navController: NavController, viewModel: SignUpViewModel, mainV
             }
             else if(state.value.status is LoadStatus.Success){
                 LaunchedEffect(Unit) {
+                    Toast.makeText(context, state.value.successMessage, Toast.LENGTH_SHORT).show()
                     navController.navigate(Screen.Login.route)
+
                 }
             }
             else {

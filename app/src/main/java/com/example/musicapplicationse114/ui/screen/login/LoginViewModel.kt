@@ -1,20 +1,24 @@
 package com.example.musicapplicationse114.ui.screen.login
 
+import androidx.compose.runtime.collectAsState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.musicapplicationse114.MainViewModel
 import com.example.musicapplicationse114.common.enum.LoadStatus
+import com.example.musicapplicationse114.model.UserLoginRequest
 import com.example.musicapplicationse114.repositories.Api
 import com.example.musicapplicationse114.repositories.MainLog
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import retrofit2.Retrofit
 import javax.inject.Inject
 
 data class LoginUiState(
     val username: String = "",
     val password: String = "",
-    val successMessage : String = "Login success",
+    val successMessage : String = "",
     var isShowPassword: Boolean = false,
     val status: LoadStatus = LoadStatus.Init()
 )
@@ -37,6 +41,10 @@ class LoginViewModel @Inject constructor(
 
     }
 
+    fun updateSuccessMessage(successMessage: String){
+        _uiState.value = _uiState.value.copy(successMessage = successMessage)
+    }
+
     fun reset()
     {
         _uiState.value = _uiState.value.copy(status = LoadStatus.Init())
@@ -46,15 +54,37 @@ class LoginViewModel @Inject constructor(
     {
         _uiState.value = _uiState.value.copy(isShowPassword = !_uiState.value.isShowPassword)
     }
-    fun login()
+    fun login1()
     {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(status = LoadStatus.Loading())
             try {
-                val result = api?.login(_uiState.value.username, _uiState.value.password)
+                val result = api?.login1(_uiState.value.username, _uiState.value.password)
                 _uiState.value = _uiState.value.copy(status = LoadStatus.Success())
             }catch (ex: Exception){
                 _uiState.value = _uiState.value.copy(status = LoadStatus.Error(ex.message.toString()))
+            }
+        }
+    }
+
+    fun login(){
+        viewModelScope.launch {
+            try{
+                _uiState.value = _uiState.value.copy(status = LoadStatus.Loading())
+                val result = api?.login(UserLoginRequest(_uiState.value.username, _uiState.value.password))
+                if(result != null && result.isSuccessful){
+                    val accessToken = result.body()?.accessToken
+                    if(accessToken != null){
+                        _uiState.value = _uiState.value.copy(status = LoadStatus.Success())
+                        updateSuccessMessage(result.body()?.message.toString())
+                        //Save Token sau khi đăng nhập ở đâu đó
+                    }
+                    else{
+                        _uiState.value = _uiState.value.copy(status = LoadStatus.Error(result.body()?.message.toString()))
+                    }
+                }
+            }catch (ex : Exception){
+                _uiState.value = _uiState.value.copy(status = LoadStatus.Error("Login requestion failed"))
             }
         }
     }
