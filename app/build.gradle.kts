@@ -77,4 +77,7 @@ dependencies {
 
     implementation(libs.material.icons.extended)
 
+    implementation (libs.accompanist.navigation.animation.v0320)
+
+
 }

@@ -14,6 +14,7 @@ import javax.inject.Inject
 data class LoginUiState(
     val username: String = "",
     val password: String = "",
+    val successMessage : String = "Login success",
     var isShowPassword: Boolean = false,
     val status: LoadStatus = LoadStatus.Init()
 )

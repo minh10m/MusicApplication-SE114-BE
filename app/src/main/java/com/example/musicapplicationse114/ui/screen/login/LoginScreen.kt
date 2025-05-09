@@ -2,6 +2,7 @@ package com.example.musicapplicationse114.ui.screen.login
 
 import android.media.Image
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -54,6 +55,7 @@ import androidx.compose.ui.focus.focusModifier
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.motionEventSpy
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -74,6 +76,7 @@ import com.example.musicapplicationse114.ui.screen.home.HomeViewModel
 @Composable
 fun LoginScreen(navController: NavHostController, viewModel: LoginViewModel, mainViewModel: MainViewModel, homeViewModel: HomeViewModel) {
     val state = viewModel.uiState.collectAsState()
+    val context = LocalContext.current
 
 
     LaunchedEffect(state.value.status) {
@@ -89,6 +92,7 @@ fun LoginScreen(navController: NavHostController, viewModel: LoginViewModel, mai
                 navController.navigate("home?username=$username&timeOfDay=$timeOfDay"){
                     popUpTo(Screen.Login.route){inclusive = true}
                 }
+                Toast.makeText(context, state.value.successMessage, Toast.LENGTH_SHORT).show()
                 Log.i("username11", homeViewModel.getUserName())
                 viewModel.reset()
             }

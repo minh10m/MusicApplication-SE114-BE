@@ -2,6 +2,12 @@ package com.example.musicapplicationse114
 
 import android.util.Log
 import android.widget.Toast
+import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -25,6 +31,8 @@ import com.example.musicapplicationse114.ui.screen.search.SearchScreenStyled
 import com.example.musicapplicationse114.ui.screen.searchtype.SearchTypeScreen
 import com.example.musicapplicationse114.ui.screen.signUp.SignUpScreen
 import com.example.musicapplicationse114.ui.screen.start.StartScreen
+import com.google.accompanist.navigation.animation.AnimatedNavHost
+import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 
 sealed class Screen(val route: String, val title: String) {
         object Home : Screen("home", "Home")
@@ -36,10 +44,13 @@ sealed class Screen(val route: String, val title: String) {
         object Library : Screen("library", "Library")
 }
 
+@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun Navigation() {
-    val navController = rememberNavController()
+    val navController = rememberAnimatedNavController()
     val mainViewModel : MainViewModel = hiltViewModel()
+    val loginViewModel : LoginViewModel = hiltViewModel()
+    val loginState = loginViewModel.uiState.collectAsState()
     val mainState = mainViewModel.uiState.collectAsState()
     val context = LocalContext.current
     LaunchedEffect(mainState.value.error) {
@@ -49,7 +60,25 @@ fun Navigation() {
         }
     }
 
-    NavHost(navController = navController, startDestination = Screen.Start.route)
+    LaunchedEffect(loginState.value.status) {
+        if(loginState.value.status is LoadStatus.Success){
+            Toast.makeText(context, loginState.value.successMessage, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    AnimatedNavHost(navController = navController, startDestination = Screen.Start.route,
+        enterTransition = {
+            fadeIn(animationSpec = tween(5))
+        },
+        exitTransition = {
+            fadeOut(animationSpec = tween(5))
+        },
+        popEnterTransition = {
+            fadeIn(animationSpec = tween(5))
+        },
+        popExitTransition = {
+            fadeOut(animationSpec = tween(5))
+        })
     {
         composable(Screen.Start.route) {
             StartScreen(navController = navController, viewModel = hiltViewModel(), mainViewModel)
