@@ -85,7 +85,7 @@ public class User implements UserDetails {
 
 //    private String theme;
 
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Token> tokens;
 
     @Override
