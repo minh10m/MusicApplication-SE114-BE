@@ -1,13 +1,5 @@
 package com.music.application.be.modules.user;
 
-import com.music.application.be.modules.artist.Artist;
-import com.music.application.be.modules.artist.ArtistRepository;
-import com.music.application.be.modules.playlist.Playlist;
-import com.music.application.be.modules.playlist.PlaylistRepository;
-import com.music.application.be.modules.song.Song;
-import com.music.application.be.modules.song.SongRepository;
-import com.music.application.be.modules.user.dto.UserDTO;
-import com.music.application.be.modules.user.dto.UserFavoritePlaylistsDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

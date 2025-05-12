@@ -56,7 +56,7 @@ public class AuthenticationService {
 
         user.setRole(request.getRole());
 
-        user = repository.save(user);
+        repository.save(user);
 
         String accessToken = jwtService.generateAccessToken(user);
         String refreshToken = jwtService.generateRefreshToken(user);
@@ -67,7 +67,7 @@ public class AuthenticationService {
 
     }
 
-    public AuthenticationResponse authenticate(User request) {
+    public AuthenticationResponse authenticate(LoginRequest request) {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.getUsername(),

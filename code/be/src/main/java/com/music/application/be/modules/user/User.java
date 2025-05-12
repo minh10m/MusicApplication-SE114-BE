@@ -38,10 +38,10 @@ public class User implements UserDetails {
     @Column(nullable = false, unique = true)
     private String username;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     private String email;
 
-    @Column(unique = true)
+    @Column()
     private String phone;
 
     @Column(nullable = false)
