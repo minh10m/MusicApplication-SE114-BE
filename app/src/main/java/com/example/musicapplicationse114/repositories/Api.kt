@@ -1,10 +1,6 @@
 package com.example.musicapplicationse114.repositories
 
-import com.example.musicapplicationse114.model.Album
-import com.example.musicapplicationse114.model.Artist
-import com.example.musicapplicationse114.model.AuthenticationRespone
-import com.example.musicapplicationse114.model.RecentlyPlayed
-import com.example.musicapplicationse114.model.Song
+import com.example.musicapplicationse114.model.AuthenticationResponse
 import com.example.musicapplicationse114.model.UserLoginRequest
 import com.example.musicapplicationse114.model.UserSignUpRequest
 import retrofit2.Response
@@ -19,9 +15,9 @@ interface Api {
 //    suspend fun loadRecentPlayed():ArrayList<RecentlyPlayed>
 
     @POST("/login")
-    suspend fun login(@Body request : UserLoginRequest): Response<AuthenticationRespone>
+    suspend fun login(@Body request : UserLoginRequest): Response<AuthenticationResponse>
 
     @POST("/register")
-    suspend fun signUp(@Body request: UserSignUpRequest): Response<AuthenticationRespone>
+    suspend fun register(@Body request: UserSignUpRequest): Response<AuthenticationResponse>
 
 }

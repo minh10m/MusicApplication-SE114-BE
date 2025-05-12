@@ -78,9 +78,9 @@ class SignUpViewModel @Inject constructor(
         _uiState.value = _uiState.value.copy(status = LoadStatus.Loading())
         viewModelScope.launch {
             try {
-                val result = api?.signUp(UserSignUpRequest(_uiState.value.username, _uiState.value.password, _uiState.value.email,"48483235", "SSG11", "USER"))
+                val result = api?.register(UserSignUpRequest(_uiState.value.username, _uiState.value.password, _uiState.value.email,_uiState.value.email, "SSG11gjh", role = Role.USER.name))
                 if(result != null && result.isSuccessful){
-                    val accessToken = result.body()?.accessToken
+                    val accessToken = result.body()?.access_token
                     if(accessToken != null){
                         _uiState.value = _uiState.value.copy(status = LoadStatus.Success())
                         Log.e("SignUpResult", "SUcesssssssssssss")
@@ -92,6 +92,7 @@ class SignUpViewModel @Inject constructor(
                         updateSuccessMessage("")
                         Log.e("SignUpError", "Response body: ${result.body()?.toString()}")
                         Log.e("SignUpError", "Response code: ${result.code()}")
+                        Log.e("SignUpError", "AccessToken: ${result.body()?.access_token}")
                     }
                 }
 

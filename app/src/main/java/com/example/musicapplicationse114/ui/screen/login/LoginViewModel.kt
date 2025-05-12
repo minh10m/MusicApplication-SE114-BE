@@ -1,5 +1,6 @@
 package com.example.musicapplicationse114.ui.screen.login
 
+import android.util.Log
 import androidx.compose.runtime.collectAsState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -73,7 +74,7 @@ class LoginViewModel @Inject constructor(
                 _uiState.value = _uiState.value.copy(status = LoadStatus.Loading())
                 val result = api?.login(UserLoginRequest(_uiState.value.username, _uiState.value.password))
                 if(result != null && result.isSuccessful){
-                    val accessToken = result.body()?.accessToken
+                    val accessToken = result.body()?.access_token
                     if(accessToken != null){
                         _uiState.value = _uiState.value.copy(status = LoadStatus.Success())
                         updateSuccessMessage(result.body()?.message.toString())
@@ -81,6 +82,9 @@ class LoginViewModel @Inject constructor(
                     }
                     else{
                         _uiState.value = _uiState.value.copy(status = LoadStatus.Error(result.body()?.message.toString()))
+                        Log.e("SignUpError", "Response body: ${result.body()?.toString()}")
+                        Log.e("SignUpError", "Response code: ${result.code()}")
+                        Log.e("SignUpError", "AccessToken: ${result.body()?.access_token}")
                     }
                 }
             }catch (ex : Exception){
