@@ -1,5 +1,6 @@
 package com.example.musicapplicationse114.ui.screen.signUp
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.musicapplicationse114.common.enum.LoadStatus
@@ -68,43 +69,35 @@ class SignUpViewModel @Inject constructor(
         _uiState.value = _uiState.value.copy(isShowConfirmPassword = !_uiState.value.isShowConfirmPassword)
     }
 
-    fun updateSuccessMessage(successMessage: String)
+    fun updateSuccessMessage(successMessage: String )
     {
         _uiState.value = _uiState.value.copy(successMessage = successMessage)
-    }
-
-    fun signUp1()
-    {
-        viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(status = LoadStatus.Loading())
-            try {
-                val result = api?.signUp1(_uiState.value.username, _uiState.value.email, _uiState.value.password, _uiState.value.confirmPassword)
-                _uiState.value = _uiState.value.copy(status = LoadStatus.Success())
-            }catch(ex: Exception)
-            {
-                _uiState.value = _uiState.value.copy(status = LoadStatus.Error(ex.message.toString()))
-            }
-        }
     }
 
     fun signUp(){
         _uiState.value = _uiState.value.copy(status = LoadStatus.Loading())
         viewModelScope.launch {
             try {
-                val result = api?.signUp(UserSignUpRequest(_uiState.value.username, _uiState.value.password, _uiState.value.email, "", "", Role.USER))
+                val result = api?.signUp(UserSignUpRequest(_uiState.value.username, _uiState.value.password, _uiState.value.email,"48483235", "SSG11", "USER"))
                 if(result != null && result.isSuccessful){
                     val accessToken = result.body()?.accessToken
                     if(accessToken != null){
                         _uiState.value = _uiState.value.copy(status = LoadStatus.Success())
+                        Log.e("SignUpResult", "SUcesssssssssssss")
                         updateSuccessMessage(result.body()?.message.toString())
                         //Save Token sau khi đăng nhập ở đâu đó
                     }else{
                         _uiState.value = _uiState.value.copy(status = LoadStatus.Error(result.body()?.message.toString()))
+                        Log.e("SIGNUP", "FAILEDDDDDDDDDDDDDDD")
+                        updateSuccessMessage("")
+                        Log.e("SignUpError", "Response body: ${result.body()?.toString()}")
+                        Log.e("SignUpError", "Response code: ${result.code()}")
                     }
                 }
 
             }catch (ex: Exception){
-                _uiState.value = _uiState.value.copy(status = LoadStatus.Error("Sign up request failed"))
+                _uiState.value = _uiState.value.copy(status = LoadStatus.Error(ex.message.toString()))
+                mainLog?.e("SignUpViewModel", ex.message.toString())
             }
         }
     }

@@ -12,16 +12,16 @@ import retrofit2.http.Body
 import retrofit2.http.POST
 
 interface Api {
-    suspend fun login1(username: String, password:String):Boolean
-    suspend fun signUp1(username: String, email: String, password: String, confirmPassword: String):Boolean
-    suspend fun loadAlbums():ArrayList<Album>
-    suspend fun loadSong():ArrayList<Song>
-    suspend fun loadRecentPlayed():ArrayList<RecentlyPlayed>
+//    suspend fun login1(username: String, password:String):Boolean
+//    suspend fun signUp1(username: String, email: String, password: String, confirmPassword: String):Boolean
+//    suspend fun loadAlbums():ArrayList<Album>
+//    suspend fun loadSong():ArrayList<Song>
+//    suspend fun loadRecentPlayed():ArrayList<RecentlyPlayed>
 
     @POST("/login")
     suspend fun login(@Body request : UserLoginRequest): Response<AuthenticationRespone>
 
-    @POST("register")
+    @POST("/register")
     suspend fun signUp(@Body request: UserSignUpRequest): Response<AuthenticationRespone>
 
 }

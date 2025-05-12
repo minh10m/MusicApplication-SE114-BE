@@ -39,51 +39,51 @@ class HomeViewModel @Inject constructor(
     val _uiState = MutableStateFlow(HomeUiState())
     val uiState = _uiState.asStateFlow()
 
-    fun loadSong()
-    {
-        viewModelScope.launch {
-            try {
-                if(api != null){
-                    val songs = api.loadSong()
-                    _uiState.value = _uiState.value.copy(songs = songs, status = LoadStatus.Success())
-                }
-            }catch(ex : Exception)
-            {
-                _uiState.value = _uiState.value.copy(status = LoadStatus.Error(ex.message.toString()))
-            }
-        }
-    }
-
-    fun loadAlbum()
-    {
-        viewModelScope.launch {
-            try {
-                if (api != null) {
-                    val albums = api.loadAlbums()
-                    _uiState.value =
-                        _uiState.value.copy(albums = albums, status = LoadStatus.Success())
-                }
-            } catch (ex: Exception) {
-                _uiState.value =
-                    _uiState.value.copy(status = LoadStatus.Error(ex.message.toString()))
-            }
-        }
-    }
-
-    fun loadRecentPlayed()
-    {
-        viewModelScope.launch {
-            try {
-                if(api != null){
-                    val recentPlayed = api.loadRecentPlayed()
-                    _uiState.value = _uiState.value.copy(recentPlayed = recentPlayed, status = LoadStatus.Success())
-                }
-            }catch (ex: Exception)
-            {
-                _uiState.value = _uiState.value.copy(status = LoadStatus.Error(ex.message.toString()))
-            }
-        }
-    }
+//    fun loadSong()
+//    {
+//        viewModelScope.launch {
+//            try {
+//                if(api != null){
+//                    val songs = api.loadSong()
+//                    _uiState.value = _uiState.value.copy(songs = songs, status = LoadStatus.Success())
+//                }
+//            }catch(ex : Exception)
+//            {
+//                _uiState.value = _uiState.value.copy(status = LoadStatus.Error(ex.message.toString()))
+//            }
+//        }
+//    }
+//
+//    fun loadAlbum()
+//    {
+//        viewModelScope.launch {
+//            try {
+//                if (api != null) {
+//                    val albums = api.loadAlbums()
+//                    _uiState.value =
+//                        _uiState.value.copy(albums = albums, status = LoadStatus.Success())
+//                }
+//            } catch (ex: Exception) {
+//                _uiState.value =
+//                    _uiState.value.copy(status = LoadStatus.Error(ex.message.toString()))
+//            }
+//        }
+//    }
+//
+//    fun loadRecentPlayed()
+//    {
+//        viewModelScope.launch {
+//            try {
+//                if(api != null){
+//                    val recentPlayed = api.loadRecentPlayed()
+//                    _uiState.value = _uiState.value.copy(recentPlayed = recentPlayed, status = LoadStatus.Success())
+//                }
+//            }catch (ex: Exception)
+//            {
+//                _uiState.value = _uiState.value.copy(status = LoadStatus.Error(ex.message.toString()))
+//            }
+//        }
+//    }
 
     fun setTimeOfDay(){
         val hour = LocalDateTime.now().hour

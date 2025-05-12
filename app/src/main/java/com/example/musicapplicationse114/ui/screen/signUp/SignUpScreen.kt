@@ -1,6 +1,7 @@
 package com.example.musicapplicationse114.ui.screen.signUp
 
 import android.media.Image
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -97,9 +98,9 @@ fun SignUpScreen(navController: NavController, viewModel: SignUpViewModel, mainV
             }
             else if(state.value.status is LoadStatus.Success){
                 LaunchedEffect(Unit) {
+                    Log.e("SIGNUP", "SUCCESSSSSSS")
                     Toast.makeText(context, state.value.successMessage, Toast.LENGTH_SHORT).show()
                     navController.navigate(Screen.Login.route)
-
                 }
             }
             else {

@@ -54,18 +54,18 @@ class LoginViewModel @Inject constructor(
     {
         _uiState.value = _uiState.value.copy(isShowPassword = !_uiState.value.isShowPassword)
     }
-    fun login1()
-    {
-        viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(status = LoadStatus.Loading())
-            try {
-                val result = api?.login1(_uiState.value.username, _uiState.value.password)
-                _uiState.value = _uiState.value.copy(status = LoadStatus.Success())
-            }catch (ex: Exception){
-                _uiState.value = _uiState.value.copy(status = LoadStatus.Error(ex.message.toString()))
-            }
-        }
-    }
+//    fun login1()
+//    {
+//        viewModelScope.launch {
+//            _uiState.value = _uiState.value.copy(status = LoadStatus.Loading())
+//            try {
+//                val result = api?.login1(_uiState.value.username, _uiState.value.password)
+//                _uiState.value = _uiState.value.copy(status = LoadStatus.Success())
+//            }catch (ex: Exception){
+//                _uiState.value = _uiState.value.copy(status = LoadStatus.Error(ex.message.toString()))
+//            }
+//        }
+//    }
 
     fun login(){
         viewModelScope.launch {
@@ -84,7 +84,7 @@ class LoginViewModel @Inject constructor(
                     }
                 }
             }catch (ex : Exception){
-                _uiState.value = _uiState.value.copy(status = LoadStatus.Error("Login requestion failed"))
+                _uiState.value = _uiState.value.copy(status = LoadStatus.Error(ex.message.toString()))
             }
         }
     }
