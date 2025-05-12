@@ -89,13 +89,13 @@ fun Navigation() {
                     defaultValue = ""
                 },
                 navArgument("timeOfDay") {
-                    defaultValue = "Morning"
+                    defaultValue = "MORNING"
                 }
             )) {
             backStackEntry ->
                 val username = backStackEntry.arguments?.getString("username") ?: ""
                 Log.i("usernameNavigation", username)
-                val timeOfDayStr = backStackEntry.arguments?.getString("timeOfDay") ?: "Morning"
+                val timeOfDayStr = backStackEntry.arguments?.getString("timeOfDay") ?: "MORNING"
                 val timeOfDay = TimeOfDay.valueOf(timeOfDayStr)
             HomeScreen(navController = navController, viewModel = hiltViewModel(), mainViewModel, username = username)
         }

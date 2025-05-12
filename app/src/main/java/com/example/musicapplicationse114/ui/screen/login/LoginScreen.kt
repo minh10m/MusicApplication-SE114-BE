@@ -83,9 +83,9 @@ fun LoginScreen(navController: NavHostController, viewModel: LoginViewModel, mai
         when (val status = state.value.status) {
             is LoadStatus.Success -> {
                 homeViewModel.setTimeOfDay()
-                homeViewModel.loadAlbum()
-                homeViewModel.loadSong()
-                homeViewModel.loadRecentPlayed()
+//                homeViewModel.loadAlbum()
+//                homeViewModel.loadSong()
+//                homeViewModel.loadRecentPlayed()
                 homeViewModel.updateUserName(viewModel.getUserName())
                 val username = viewModel.getUserName()
                 val timeOfDay = homeViewModel.getTimeOfDay().name
