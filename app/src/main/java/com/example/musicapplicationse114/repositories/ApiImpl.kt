@@ -7,32 +7,32 @@ import kotlinx.coroutines.delay
 import javax.inject.Inject
 
 class ApiImpl @Inject constructor() : Api {
-    val songs = ArrayList<Song>()
-    val albums = ArrayList<Album>()
-    val recentPlayed = ArrayList<RecentlyPlayed>()
-    override suspend fun login1(username: String, password: String): Boolean {
+    private val songs = ArrayList<Song>()
+    private val albums = ArrayList<Album>()
+    private val recentPlayed = ArrayList<RecentlyPlayed>()
+
+    override suspend fun login(username: String, password: String): Boolean {
         delay(2000)
-        if(username != "TuanLee" || password != "1234")
-        {
+        if (username != "TuanLee" || password != "1234") {
             throw Exception("Invalid username or password")
         }
         return true
     }
 
-    override suspend fun signUp1(
+    override suspend fun signUp(
         username: String,
         email: String,
         password: String,
         confirmPassword: String
     ): Boolean {
         delay(1000)
-        if(username == "tuan@111" || username == "admin"){
+        if (username == "tuan@111" || username == "admin") {
             throw Exception("Username already exists")
-        }
-        else if(email == "tuanlee@gmail.com" || email == "admin@gmail.com")
+        } else if (email == "tuanlee@gmail.com" || email == "admin@gmail.com") {
             throw Exception("Email already exists")
-        else if(password != confirmPassword)
+        } else if (password != confirmPassword) {
             throw Exception("Password not match")
+        }
         return true
     }
 
