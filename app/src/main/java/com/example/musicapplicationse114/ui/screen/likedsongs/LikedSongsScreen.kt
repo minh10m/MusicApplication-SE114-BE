@@ -28,9 +28,14 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.musicapplicationse114.MainViewModel
+import com.example.musicapplicationse114.model.Album
+import com.example.musicapplicationse114.model.Artist
+import com.example.musicapplicationse114.model.Genre
 import com.example.musicapplicationse114.model.Song
 import com.example.musicapplicationse114.ui.screen.home.NavigationBar
 import com.example.musicapplicationse114.ui.theme.MusicApplicationSE114Theme
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.delay
 
 @Composable
@@ -73,11 +78,7 @@ fun LikedSongsScreen(
                     tint = Color.White,
                     modifier = Modifier
                         .size(28.dp)
-                        .clickable {
-                            if (!navController.popBackStack()) {
-                                navController.navigate("library")
-                            }
-                        }
+                        .clickable { navController.popBackStack() }
                 )
                 Spacer(modifier = Modifier.width(12.dp))
                 Column {
@@ -142,13 +143,31 @@ fun SongItem(song: Song) {
     }
 }
 
+class FakeLikedSongsViewModel(songs: List<Song>) : LikedSongsViewModel() {
+    private val _songs = MutableStateFlow(songs)
+    override val likedSongs: StateFlow<List<Song>> = _songs
+}
+
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun PreviewLikedSongsScreen() {
     MusicApplicationSE114Theme(darkTheme = true) {
+        val dummyArtist = Artist(1, "The Chainsmokers", "", "", 0, arrayListOf(), arrayListOf(), arrayListOf())
+        val dummyAlbum = Album(1, "Test Album", "2020-01-01", "", "", dummyArtist, arrayListOf())
+        val dummyGenre = Genre(1, "EDM", "", arrayListOf())
+
+        val songs = listOf(
+            Song(1, "Inside Out", 220, "", "", "", "2020-01-01", 0, dummyAlbum, dummyArtist, dummyGenre),
+            Song(2, "Young", 210, "", "", "", "2020-01-01", 0, dummyAlbum, dummyArtist, dummyGenre),
+            Song(3, "Beach House", 250, "", "", "", "2020-01-01", 0, dummyAlbum, dummyArtist, dummyGenre),
+            Song(4, "Kills You Slowly", 200, "", "", "", "2020-01-01", 0, dummyAlbum, dummyArtist, dummyGenre)
+        )
+
+        val fakeViewModel = FakeLikedSongsViewModel(songs)
+
         LikedSongsScreen(
             navController = rememberNavController(),
-            viewModel = LikedSongsViewModel(),
+            viewModel = fakeViewModel,
             mainViewModel = MainViewModel()
         )
     }
