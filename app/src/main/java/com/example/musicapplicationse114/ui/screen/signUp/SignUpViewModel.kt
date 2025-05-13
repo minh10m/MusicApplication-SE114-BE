@@ -1,11 +1,8 @@
 package com.example.musicapplicationse114.ui.screen.signUp
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.musicapplicationse114.common.enum.LoadStatus
-import com.example.musicapplicationse114.common.enum.Role
-import com.example.musicapplicationse114.model.UserSignUpRequest
 import com.example.musicapplicationse114.repositories.Api
 import com.example.musicapplicationse114.repositories.MainLog
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -30,78 +27,63 @@ class SignUpViewModel @Inject constructor(
     private val mainLog: MainLog?,
     private val api: Api?
 ): ViewModel() {
-    val _uiState = MutableStateFlow(SignUpUiState())
+
+    private val _uiState = MutableStateFlow(SignUpUiState())
     val uiState = _uiState.asStateFlow()
 
     fun updateUsername(username: String) {
         _uiState.value = _uiState.value.copy(username = username)
     }
 
-    fun updateEmail(email: String)
-    {
+    fun updateEmail(email: String) {
         _uiState.value = _uiState.value.copy(email = email)
-
     }
 
-    fun updatePassword(password: String)
-    {
+    fun updatePassword(password: String) {
         _uiState.value = _uiState.value.copy(password = password)
     }
 
-    fun updateConfirmPassword(confirmPassword: String)
-    {
+    fun updateConfirmPassword(confirmPassword: String) {
         _uiState.value = _uiState.value.copy(confirmPassword = confirmPassword)
     }
 
-    fun reset()
-    {
+    fun reset() {
         _uiState.value = _uiState.value.copy(status = LoadStatus.Init())
-
     }
 
-    fun changIsShowPassword()
-    {
+    fun changIsShowPassword() {
         _uiState.value = _uiState.value.copy(isShowPassword = !_uiState.value.isShowPassword)
-
     }
 
-    fun changIsShowConfirmPassword(){
+    fun changIsShowConfirmPassword() {
         _uiState.value = _uiState.value.copy(isShowConfirmPassword = !_uiState.value.isShowConfirmPassword)
     }
 
-    fun updateSuccessMessage(successMessage: String )
-    {
+    fun updateSuccessMessage(successMessage: String) {
         _uiState.value = _uiState.value.copy(successMessage = successMessage)
     }
 
-    fun signUp(){
-        _uiState.value = _uiState.value.copy(status = LoadStatus.Loading())
+    fun signUp() {
         viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(status = LoadStatus.Loading())
             try {
-                val result = api?.register(UserSignUpRequest(_uiState.value.username, _uiState.value.password, _uiState.value.email,_uiState.value.email, "SSG11gjh", role = Role.USER.name))
-                if(result != null && result.isSuccessful){
-                    val accessToken = result.body()?.access_token
-                    if(accessToken != null){
-                        _uiState.value = _uiState.value.copy(status = LoadStatus.Success())
-                        Log.e("SignUpResult", "SUcesssssssssssss")
-                        updateSuccessMessage(result.body()?.message.toString())
-                        //Save Token sau khi đăng nhập ở đâu đó
-                    }else{
-                        _uiState.value = _uiState.value.copy(status = LoadStatus.Error(result.body()?.message.toString()))
-                        Log.e("SIGNUP", "FAILEDDDDDDDDDDDDDDD")
-                        updateSuccessMessage("")
-                        Log.e("SignUpError", "Response body: ${result.body()?.toString()}")
-                        Log.e("SignUpError", "Response code: ${result.code()}")
-                        Log.e("SignUpError", "AccessToken: ${result.body()?.access_token}")
-                    }
+                val result = api?.signUp(
+                    _uiState.value.username,
+                    _uiState.value.email,
+                    _uiState.value.password,
+                    _uiState.value.confirmPassword
+                )
+                if (result == true) {
+                    _uiState.value = _uiState.value.copy(
+                        status = LoadStatus.Success(),
+                        successMessage = "Sign up successful"
+                    )
                 }
-
-            }catch (ex: Exception){
-                _uiState.value = _uiState.value.copy(status = LoadStatus.Error(ex.message.toString()))
-                mainLog?.e("SignUpViewModel", ex.message.toString())
+            } catch (ex: Exception) {
+                _uiState.value = _uiState.value.copy(
+                    status = LoadStatus.Error(ex.message ?: "Unknown error")
+                )
             }
         }
     }
-
-
 }

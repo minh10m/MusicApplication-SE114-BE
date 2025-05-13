@@ -226,7 +226,7 @@ fun HomeScreen(navController: NavHostController, viewModel: HomeViewModel, mainV
         }
     }
     var coroutineScope = rememberCoroutineScope()
-    LaunchedEffect(username) {
+    LaunchedEffect(Unit) {
         viewModel.setTimeOfDay()
         viewModel.updateUserName(username)
         Log.i("username", viewModel.getUserName())
