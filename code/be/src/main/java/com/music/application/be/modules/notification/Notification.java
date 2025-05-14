@@ -30,8 +30,9 @@ public class Notification {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String type; // Consider using Enum instead
+    private NotificationType type;
 
     @Column(nullable = false)
     private boolean read = false;
