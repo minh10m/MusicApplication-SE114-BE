@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+
 @Service
 public class AuthenticationService {
 
@@ -40,7 +41,7 @@ public class AuthenticationService {
         this.authenticationManager = authenticationManager;
     }
 
-    public AuthenticationResponse register(User request) {
+    public AuthenticationResponse register(RegisterRequest request) {
 
         // check if user already exist. if exist than authenticate the user
         if(repository.findByUsername(request.getUsername()).isPresent()) {
@@ -56,7 +57,15 @@ public class AuthenticationService {
 
         user.setRole(request.getRole());
 
-        user = repository.save(user);
+        repository.save(user);
+
+//        System.out.println("=== User Information ===");
+//        System.out.println("Username: " + user.getUsername());
+//        System.out.println("Email: " + user.getEmail());
+//        System.out.println("Phone: " + user.getPhone());
+//        System.out.println("Role: " + user.getRole());
+//        System.out.println("Avatar: " + user.getAvatar());
+//        System.out.println("========================");
 
         String accessToken = jwtService.generateAccessToken(user);
         String refreshToken = jwtService.generateRefreshToken(user);
@@ -67,15 +76,24 @@ public class AuthenticationService {
 
     }
 
-    public AuthenticationResponse authenticate(User request) {
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.getUsername(),
-                        request.getPassword()
-                )
-        );
+    public AuthenticationResponse authenticate(LoginRequest request) {
+        var userOptional = repository.findByUsername(request.getUsername());
+        if(userOptional.isEmpty()){
+            return new AuthenticationResponse(null, null, "Tài khoản không tồn tại");
+        }
 
-        User user = repository.findByUsername(request.getUsername()).orElseThrow();
+        User user = userOptional.get();
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            request.getUsername(),
+                            request.getPassword()
+                    )
+            );
+        }catch(Exception ex){
+            return new AuthenticationResponse(null, null, "Sai tên đăng nhập hoặc mật khẩu");
+        }
+
         String accessToken = jwtService.generateAccessToken(user);
         String refreshToken = jwtService.generateRefreshToken(user);
 

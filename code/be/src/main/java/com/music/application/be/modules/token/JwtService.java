@@ -88,16 +88,28 @@ public class JwtService {
     }
 
     private String generateToken(User user, long expireTime) {
-        String token = Jwts
-                .builder()
-                .subject(user.getUsername())
-                .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + expireTime ))
-                .signWith(getSigninKey())
-                .compact();
+        System.out.println("=== Generating Token ===");
+        System.out.println("Username: " + user.getUsername());
+        System.out.println("Expire Time: " + expireTime);
+
+        String token = null;
+        try {
+            token = Jwts.builder()
+                    .subject(user.getUsername())
+                    .issuedAt(new Date(System.currentTimeMillis()))
+                    .expiration(new Date(System.currentTimeMillis() + expireTime))
+                    .signWith(getSigninKey())
+                    .compact();
+        } catch (Exception e) {
+            System.out.println("Error Generating Token: " + e.getMessage());
+        }
+
+        System.out.println("Generated Token: " + token);
+        System.out.println("========================");
 
         return token;
     }
+
 
     private SecretKey getSigninKey() {
         byte[] keyBytes = Decoders.BASE64URL.decode(secretKey);
