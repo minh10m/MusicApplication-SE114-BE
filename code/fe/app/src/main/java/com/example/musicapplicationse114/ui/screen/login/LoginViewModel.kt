@@ -1,5 +1,6 @@
 package com.example.musicapplicationse114.ui.screen.login
 
+import android.content.Context
 import android.util.Log
 import androidx.compose.runtime.collectAsState
 import androidx.lifecycle.ViewModel
@@ -9,6 +10,7 @@ import com.example.musicapplicationse114.common.enum.LoadStatus
 import com.example.musicapplicationse114.model.UserLoginRequest
 import com.example.musicapplicationse114.repositories.Api
 import com.example.musicapplicationse114.repositories.MainLog
+import com.example.musicapplicationse114.store.TokenManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -68,7 +70,8 @@ class LoginViewModel @Inject constructor(
 //        }
 //    }
 
-    fun login(){
+
+    fun login(context: Context){
         viewModelScope.launch {
             try{
                 _uiState.value = _uiState.value.copy(status = LoadStatus.Loading())
@@ -76,15 +79,11 @@ class LoginViewModel @Inject constructor(
                 if(result != null && result.isSuccessful){
                     val accessToken = result.body()?.access_token
                     if(accessToken != null){
+                        // Lưu token vào SharedPreferences
+                        TokenManager(context).saveAccessToken(accessToken)
+
                         _uiState.value = _uiState.value.copy(status = LoadStatus.Success())
                         updateSuccessMessage(result.body()?.message.toString())
-                        //Save Token sau khi đăng nhập ở đâu đó
-                    }
-                    else{
-                        _uiState.value = _uiState.value.copy(status = LoadStatus.Error(result.body()?.message.toString()))
-                        Log.e("SignUpError", "Response body: ${result.body()?.toString()}")
-                        Log.e("SignUpError", "Response code: ${result.code()}")
-                        Log.e("SignUpError", "AccessToken: ${result.body()?.access_token}")
                     }
                 }
             }catch (ex : Exception){
@@ -92,6 +91,7 @@ class LoginViewModel @Inject constructor(
             }
         }
     }
+
 
     fun getUserName() : String
     {
