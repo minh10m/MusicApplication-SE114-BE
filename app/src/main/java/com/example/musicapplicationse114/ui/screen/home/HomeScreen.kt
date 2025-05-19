@@ -357,65 +357,82 @@ fun HomeScreen(navController: NavHostController, viewModel: HomeViewModel, mainV
 
 
 @Composable
-fun NavigationBar(navController: NavController, onHomeReselected: () -> Unit){
+fun NavigationBar(navController: NavController, onHomeReselected: () -> Unit) {
     val currentRoute = currentRoute(navController = navController)
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(160.dp)
-            .background(Color.Black.copy(alpha = 0.5f))
-            .padding(bottom = 10.dp)
+            .background(Color.Transparent) // 👈 Nền trong suốt hoàn toàn
+            .padding(bottom = 16.dp)       // 👈 Dưới một chút để tránh đụng gesture bar
     ) {
         Row(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 12.dp), // 👈 Thêm padding cho gọn gàng thay vì height cứng
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                IconButton(onClick = {
-                    if(currentRoute == "home")
-                    {
-                        onHomeReselected()
-                    }
-                    else{
-                        navController.navigate("home")
-                        {
-                            popUpTo(navController.graph.startDestinationId) { saveState = true }
-                            launchSingleTop = true
-                            restoreState = true
-                        }
-                    }
-                })  { Icon(Icons.Filled.Home, contentDescription = null, tint = Color.LightGray, modifier = Modifier.size(30.dp))}
-                Spacer(modifier = Modifier.height(0.dp))
-                Text("Home", fontSize = 12.sp, color = Color.LightGray)
-            }
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                IconButton(onClick = {
-                    navController.navigate("search")
-                    {
-                            popUpTo(navController.graph.startDestinationId) { saveState = true }
-                            launchSingleTop = true
-                            restoreState = true
-                        }
-                })  {Icon(Icons.Filled.Search, contentDescription = null, tint = Color.LightGray, modifier = Modifier.size(30.dp))}
-                Spacer(modifier = Modifier.height(0.dp))
-                Text("Search", fontSize = 12.sp, color = Color.LightGray)
-            }
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                IconButton(onClick = {
-                    navController.navigate("library")
-                    {
+            NavBarItem(
+                icon = Icons.Filled.Home,
+                label = "Home",
+                selected = currentRoute == "home",
+                onClick = {
+                    if (currentRoute == "home") onHomeReselected()
+                    else navController.navigate("home") {
                         popUpTo(navController.graph.startDestinationId) { saveState = true }
                         launchSingleTop = true
                         restoreState = true
                     }
-                })  {Icon(Icons.Filled.Menu, contentDescription = null, tint = Color.LightGray, modifier = Modifier.size(30.dp))}
-                Spacer(modifier = Modifier.height(0.dp))
-                Text("Library", fontSize = 12.sp, color = Color.LightGray)
-            }
+                }
+            )
+
+            NavBarItem(
+                icon = Icons.Filled.Search,
+                label = "Search",
+                selected = currentRoute == "search",
+                onClick = {
+                    navController.navigate("search") {
+                        popUpTo(navController.graph.startDestinationId) { saveState = true }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                }
+            )
+
+            NavBarItem(
+                icon = Icons.Filled.Menu,
+                label = "Library",
+                selected = currentRoute == "library",
+                onClick = {
+                    navController.navigate("library") {
+                        popUpTo(navController.graph.startDestinationId) { saveState = true }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                }
+            )
         }
     }
 }
+
+@Composable
+fun NavBarItem(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    label: String,
+    selected: Boolean,
+    onClick: () -> Unit
+) {
+    val color = if (selected) Color.White else Color.LightGray
+
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        IconButton(onClick = onClick) {
+            Icon(icon, contentDescription = label, tint = color, modifier = Modifier.size(30.dp))
+        }
+        Text(label, fontSize = 12.sp, color = color)
+    }
+}
+
 
 @Composable
 fun currentRoute(navController: NavController): String? {

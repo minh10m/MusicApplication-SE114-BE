@@ -24,6 +24,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.only
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
@@ -58,13 +62,18 @@ fun LikedSongsScreen(
         }
     }
 
-    Scaffold(bottomBar = { NavigationBar(navController = navController) { showLoading = true } }) { innerPadding ->
+    Scaffold(
+        contentWindowInsets = WindowInsets
+            .safeDrawing
+            .only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top),
+        bottomBar = { NavigationBar(navController = navController) { showLoading = true } }
+    ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color.Black)
                 .padding(innerPadding)
-                .padding(start = 24.dp, end = 24.dp, top = 24.dp, bottom = 80.dp)
+                .padding(start = 24.dp, end = 24.dp, top = 48.dp, bottom = 80.dp)
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
@@ -81,9 +90,18 @@ fun LikedSongsScreen(
                 )
                 Spacer(modifier = Modifier.width(12.dp))
                 Column {
-                    Text("Liked Songs", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                    Text(
+                        text = "Liked Songs",
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
                     Spacer(modifier = Modifier.height(4.dp))
-                    Text("${songs.size} liked songs", fontSize = 14.sp, color = Color.Gray)
+                    Text(
+                        text = "${songs.size} liked songs",
+                        fontSize = 14.sp,
+                        color = Color.Gray
+                    )
                 }
             }
             Spacer(modifier = Modifier.height(24.dp))
@@ -104,7 +122,7 @@ fun LikedSongsScreen(
 fun SearchBar() {
     var text by remember { mutableStateOf("") }
     Row(
-        Modifier
+        modifier = Modifier
             .fillMaxWidth()
             .background(Color(0xFF2C2C2C), RoundedCornerShape(12.dp))
             .padding(12.dp),
@@ -112,7 +130,7 @@ fun SearchBar() {
     ) {
         Icon(Icons.Default.Search, contentDescription = null, tint = Color.White.copy(alpha = 0.8f))
         Spacer(modifier = Modifier.width(8.dp))
-        Text(text = "Search", color = Color.White.copy(alpha = 0.6f))
+        Text(text = "Search", color = Color.White.copy(alpha = 0.6f), fontSize = 14.sp)
         Spacer(modifier = Modifier.weight(1f))
         Icon(Icons.Default.SwapVert, contentDescription = null, tint = Color.White.copy(alpha = 0.8f))
     }

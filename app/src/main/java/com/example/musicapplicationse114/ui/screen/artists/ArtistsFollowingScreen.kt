@@ -17,7 +17,12 @@ import androidx.compose.material.icons.filled.SwapVert
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -45,7 +50,14 @@ fun ArtistsFollowingScreen(
 ) {
     val artists by viewModel.followingArtists.collectAsState()
 
-    Scaffold(bottomBar = { NavigationBar(navController = navController) {} }) { innerPadding ->
+    Scaffold(
+        containerColor = Color.Transparent,
+        bottomBar = {
+            Box(modifier = Modifier.fillMaxWidth().background(Color.Transparent)) {
+                NavigationBar(navController = navController) {}
+            }
+        }
+    ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
