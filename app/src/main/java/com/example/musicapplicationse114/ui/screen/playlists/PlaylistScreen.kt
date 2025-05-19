@@ -1,5 +1,6 @@
 package com.example.musicapplicationse114.ui.screen.playlists
 
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -32,13 +33,6 @@ import com.example.musicapplicationse114.MainViewModel
 import com.example.musicapplicationse114.model.Playlist
 import com.example.musicapplicationse114.ui.screen.home.NavigationBar
 import com.example.musicapplicationse114.ui.theme.MusicApplicationSE114Theme
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.exclude
-import androidx.compose.foundation.layout.navigationBars
-import androidx.compose.foundation.layout.only
-import androidx.compose.foundation.layout.safeDrawing
-import androidx.compose.foundation.layout.systemBarsPadding
 
 @Composable
 fun PlaylistScreen(
@@ -47,25 +41,30 @@ fun PlaylistScreen(
     mainViewModel: MainViewModel
 ) {
     val playlists by viewModel.playlists.collectAsState()
+    var showLoading by remember { mutableStateOf(false) }
 
-    Scaffold(
-        contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top),
-        bottomBar = { NavigationBar(navController = navController) {} }
-    ) { innerPadding ->
+    if (showLoading) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator()
+        }
+    }
+
+    Scaffold(bottomBar = { NavigationBar(navController = navController) { showLoading = true } }) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color.Black)
-                .padding(innerPadding)
-                .padding(start = 24.dp, end = 24.dp, top = 24.dp)
+                .padding(start = 24.dp, end = 24.dp, top = 48.dp, bottom = 80.dp)
         ) {
             Text("Playlists", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.White)
-            Spacer(modifier = Modifier.height(4.dp))
-            Text("${playlists.size} playlists", fontSize = 14.sp, color = Color.Gray)
             Spacer(modifier = Modifier.height(24.dp))
 
             PlaylistSearchBar()
-            Spacer(modifier = Modifier.height(16.dp))
+
+            Spacer(modifier = Modifier.height(24.dp))
 
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Default.SwapVert, contentDescription = null, tint = Color.White.copy(alpha = 0.8f))

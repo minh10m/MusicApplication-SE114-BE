@@ -21,7 +21,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -32,6 +31,11 @@ import com.example.musicapplicationse114.model.Song
 import com.example.musicapplicationse114.ui.screen.home.NavigationBar
 import com.example.musicapplicationse114.ui.theme.MusicApplicationSE114Theme
 import kotlinx.coroutines.delay
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.ui.tooling.preview.Preview
 
 @Composable
 fun DownloadSongsScreen(
@@ -58,7 +62,10 @@ fun DownloadSongsScreen(
         }
     }
 
-    Scaffold(bottomBar = { NavigationBar(navController = navController) { showLoading = true } }) { innerPadding ->
+    Scaffold(
+        contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top),
+        bottomBar = { NavigationBar(navController = navController) { showLoading = true } }
+    ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -81,14 +88,25 @@ fun DownloadSongsScreen(
                 )
                 Spacer(modifier = Modifier.width(12.dp))
                 Column {
-                    Text("Downloaded Songs", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                    Text(
+                        "Downloaded Songs",
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
                     Spacer(modifier = Modifier.height(4.dp))
-                    Text("${songs.size} downloaded songs", fontSize = 14.sp, color = Color.Gray)
+                    Text(
+                        "${songs.size} downloaded songs",
+                        fontSize = 14.sp,
+                        color = Color.Gray
+                    )
                 }
             }
+
             Spacer(modifier = Modifier.height(24.dp))
 
             SearchBar()
+
             Spacer(modifier = Modifier.height(12.dp))
 
             LazyColumn(modifier = Modifier.fillMaxWidth()) {
