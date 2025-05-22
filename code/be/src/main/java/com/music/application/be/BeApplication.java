@@ -8,8 +8,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 @SpringBootApplication
-//@EnableJpaRepositories(basePackages = "com.music.application.be.modules")
-//@EntityScan(basePackages = "com.music.application.be.modules")
+@EnableCaching
 public class BeApplication {
 
 	public static void main(String[] args) {
