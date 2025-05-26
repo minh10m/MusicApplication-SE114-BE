@@ -47,6 +47,7 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private String password;
 
+    @Column(columnDefinition = "TEXT", nullable = false)
     private String avatar;
 
     @CreationTimestamp

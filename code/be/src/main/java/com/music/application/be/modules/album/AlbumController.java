@@ -6,10 +6,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.validation.Valid;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/albums")
@@ -18,19 +17,19 @@ public class AlbumController {
     @Autowired
     private AlbumService albumService;
 
-    // Create album
     @PostMapping
-    public ResponseEntity<AlbumDTO> createAlbum(@RequestBody AlbumDTO albumDTO) {
-        return ResponseEntity.ok(albumService.createAlbum(albumDTO));
+    public ResponseEntity<AlbumDTO> createAlbum(
+            @RequestPart("album") AlbumDTO albumDTO,
+            @RequestPart("coverImage") MultipartFile coverImageFile) throws Exception {
+        AlbumDTO result = albumService.createAlbum(albumDTO, coverImageFile);
+        return ResponseEntity.ok(result);
     }
 
-    // Get album by ID
     @GetMapping("/{id}")
     public ResponseEntity<AlbumDTO> getAlbumById(@PathVariable Long id) {
         return ResponseEntity.ok(albumService.getAlbumById(id));
     }
 
-    // Get all albums
     @GetMapping
     public ResponseEntity<Page<AlbumDTO>> getAllAlbums(
             @RequestParam(defaultValue = "0") int page,
@@ -39,20 +38,21 @@ public class AlbumController {
         return ResponseEntity.ok(albumService.getAllAlbums(pageable));
     }
 
-    // Update album
     @PutMapping("/{id}")
-    public ResponseEntity<AlbumDTO> updateAlbum(@PathVariable Long id, @RequestBody AlbumDTO albumDTO) {
-        return ResponseEntity.ok(albumService.updateAlbum(id, albumDTO));
+    public ResponseEntity<AlbumDTO> updateAlbum(
+            @PathVariable Long id,
+            @RequestPart("album") AlbumDTO albumDTO,
+            @RequestPart(value = "coverImage", required = false) MultipartFile coverImageFile) throws Exception {
+        AlbumDTO result = albumService.updateAlbum(id, albumDTO, coverImageFile);
+        return ResponseEntity.ok(result);
     }
 
-    // Delete album
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteAlbum(@PathVariable Long id) {
         albumService.deleteAlbum(id);
         return ResponseEntity.ok().build();
     }
 
-    // Search albums
     @GetMapping("/search")
     public ResponseEntity<Page<AlbumDTO>> searchAlbums(
             @RequestParam String query,
@@ -62,7 +62,6 @@ public class AlbumController {
         return ResponseEntity.ok(albumService.searchAlbums(query, pageable));
     }
 
-    // Get albums by artist
     @GetMapping("/artist/{artistId}")
     public ResponseEntity<Page<AlbumDTO>> getAlbumsByArtist(
             @PathVariable Long artistId,
@@ -72,7 +71,6 @@ public class AlbumController {
         return ResponseEntity.ok(albumService.getAlbumsByArtist(artistId, pageable));
     }
 
-    // Share album
     @GetMapping("/{id}/share")
     public ResponseEntity<String> shareAlbum(@PathVariable Long id) {
         return ResponseEntity.ok(albumService.shareAlbum(id));

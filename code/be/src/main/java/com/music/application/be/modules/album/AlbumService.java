@@ -2,11 +2,17 @@ package com.music.application.be.modules.album;
 
 import com.music.application.be.modules.artist.Artist;
 import com.music.application.be.modules.artist.ArtistRepository;
-import com.music.application.be.modules.song.Song;
+import com.music.application.be.modules.cloudinary.CloudinaryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import jakarta.persistence.EntityNotFoundException;
+
+import java.io.IOException;
 import java.util.stream.Collectors;
 
 @Service
@@ -18,75 +24,82 @@ public class AlbumService {
     @Autowired
     private ArtistRepository artistRepository;
 
-    // Create
-    public AlbumDTO createAlbum(AlbumDTO albumDTO) {
+    @Autowired
+    private CloudinaryService cloudinaryService;
+
+    public AlbumDTO createAlbum(AlbumDTO albumDTO, MultipartFile coverImageFile) throws IOException {
+        if (coverImageFile == null || coverImageFile.isEmpty()) {
+            throw new IllegalArgumentException("Cover image is required");
+        }
+        if (albumDTO.getName() == null || albumDTO.getName().trim().isEmpty()) {
+            throw new IllegalArgumentException("Album name is required");
+        }
+
         Artist artist = artistRepository.findById(albumDTO.getArtistId())
-                .orElseThrow(() -> new RuntimeException("Artist not found"));
+                .orElseThrow(() -> new jakarta.persistence.EntityNotFoundException("Artist not found with id: " + albumDTO.getArtistId()));
 
         Album album = new Album();
         album.setName(albumDTO.getName());
         album.setReleaseDate(albumDTO.getReleaseDate());
-        album.setCoverImage(albumDTO.getCoverImage());
         album.setDescription(albumDTO.getDescription());
         album.setArtist(artist);
+
+        String coverImageUrl = cloudinaryService.uploadFile(coverImageFile, "image");
+        album.setCoverImage(coverImageUrl);
 
         Album savedAlbum = albumRepository.save(album);
         return mapToDTO(savedAlbum);
     }
 
-    // Read by ID
+    public AlbumDTO updateAlbum(Long id, AlbumDTO albumDTO, MultipartFile coverImageFile) throws IOException {
+        Album album = albumRepository.findById(id)
+                .orElseThrow(() -> new jakarta.persistence.EntityNotFoundException("Album not found with id: " + id));
+
+        Artist artist = artistRepository.findById(albumDTO.getArtistId())
+                .orElseThrow(() -> new jakarta.persistence.EntityNotFoundException("Artist not found with id: " + albumDTO.getArtistId()));
+
+        album.setName(albumDTO.getName());
+        album.setReleaseDate(albumDTO.getReleaseDate());
+        album.setDescription(albumDTO.getDescription());
+        album.setArtist(artist);
+
+        if (coverImageFile != null && !coverImageFile.isEmpty()) {
+            String coverImageUrl = cloudinaryService.uploadFile(coverImageFile, "image");
+            album.setCoverImage(coverImageUrl);
+        }
+
+        Album updatedAlbum = albumRepository.save(album);
+        return mapToDTO(updatedAlbum);
+    }
+
     public AlbumDTO getAlbumById(Long id) {
         Album album = albumRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Album not found"));
         return mapToDTO(album);
     }
 
-    // Read all with pagination
     public Page<AlbumDTO> getAllAlbums(Pageable pageable) {
         return albumRepository.findAll(pageable).map(this::mapToDTO);
     }
 
-    // Update
-    public AlbumDTO updateAlbum(Long id, AlbumDTO albumDTO) {
-        Album album = albumRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Album not found"));
-
-        Artist artist = artistRepository.findById(albumDTO.getArtistId())
-                .orElseThrow(() -> new RuntimeException("Artist not found"));
-
-        album.setName(albumDTO.getName());
-        album.setReleaseDate(albumDTO.getReleaseDate());
-        album.setCoverImage(albumDTO.getCoverImage());
-        album.setDescription(albumDTO.getDescription());
-        album.setArtist(artist);
-
-        Album updatedAlbum = albumRepository.save(album);
-        return mapToDTO(updatedAlbum);
-    }
-
-    // Delete
     public void deleteAlbum(Long id) {
         Album album = albumRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Album not found"));
         albumRepository.delete(album);
     }
 
-    // Search albums
     public Page<AlbumDTO> searchAlbums(String query, Pageable pageable) {
         return albumRepository.findByNameContainingIgnoreCase(query, pageable).map(this::mapToDTO);
     }
 
-    // Get albums by artist
     public Page<AlbumDTO> getAlbumsByArtist(Long artistId, Pageable pageable) {
         return albumRepository.findByArtistId(artistId, pageable).map(this::mapToDTO);
     }
 
-    // Share album
     public String shareAlbum(Long id) {
         return "https://musicapp.com/album/" + id;
     }
 
-    // Map entity to DTO
     private AlbumDTO mapToDTO(Album album) {
         AlbumDTO dto = new AlbumDTO();
         dto.setId(album.getId());

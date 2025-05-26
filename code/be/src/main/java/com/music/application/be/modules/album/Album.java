@@ -26,7 +26,7 @@ public class Album {
     @Column(name = "release_date")
     private LocalDate releaseDate;
 
-    @Column(name = "cover_image")
+    @Column(name = "cover_image", columnDefinition = "TEXT", nullable = false)
     private String coverImage;
 
     @Column(columnDefinition = "TEXT")
