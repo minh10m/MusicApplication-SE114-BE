@@ -3,8 +3,6 @@ package com.music.application.be.modules.follow_artist;
 import com.music.application.be.modules.artist.Artist;
 import com.music.application.be.modules.artist.ArtistRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -21,7 +19,6 @@ public class FollowArtistService {
     private ArtistRepository artistRepository;
 
     // Follow artist
-    @CacheEvict(value = {"followedArtists", "followedArtistsSearch"}, key = "#userId")
     public FollowArtistDTO followArtist(Long userId, Long artistId) {
         Artist artist = artistRepository.findById(artistId)
                 .orElseThrow(() -> new RuntimeException("Artist not found"));
@@ -39,7 +36,6 @@ public class FollowArtistService {
     }
 
     // Unfollow artist
-    @CacheEvict(value = {"followedArtists", "followedArtistsSearch"}, key = "#userId")
     public void unfollowArtist(Long userId, Long artistId) {
         FollowArtist followArtist = followArtistRepository.findByUserIdAndArtistId(userId, artistId)
                 .orElseThrow(() -> new RuntimeException("Follow relationship not found"));
@@ -52,13 +48,11 @@ public class FollowArtistService {
     }
 
     // Get followed artists
-    @Cacheable(value = "followedArtists", key = "#userId + '-' + #pageable.pageNumber + '-' + #pageable.pageSize")
     public Page<FollowArtistDTO> getFollowedArtists(Long userId, Pageable pageable) {
         return followArtistRepository.findByUserId(userId, pageable).map(this::mapToDTO);
     }
 
     // Search followed artists
-    @Cacheable(value = "followedArtistsSearch", key = "#userId + '-' + #query + '-' + #pageable.pageNumber + '-' + #pageable.pageSize")
     public Page<FollowArtistDTO> searchFollowedArtists(Long userId, String query, Pageable pageable) {
         return followArtistRepository.findByUserIdAndArtistNameContainingIgnoreCase(userId, query, pageable)
                 .map(this::mapToDTO);

@@ -3,9 +3,6 @@ package com.music.application.be.modules.artist;
 import com.music.application.be.modules.album.Album;
 import com.music.application.be.modules.album.AlbumRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.CachePut;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -23,7 +20,6 @@ public class ArtistService {
     private AlbumRepository albumRepository;
 
     // Create
-    @CachePut(value = "artists", key = "#result.id")
     public ArtistDTO createArtist(ArtistDTO artistDTO) {
         Artist artist = new Artist();
         artist.setName(artistDTO.getName());
@@ -45,7 +41,6 @@ public class ArtistService {
     }
 
     // Read by ID
-    @Cacheable(value = "artists", key = "#id")
     public ArtistDTO getArtistById(Long id) {
         Artist artist = artistRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Artist not found"));
@@ -53,13 +48,11 @@ public class ArtistService {
     }
 
     // Read all with pagination
-    @Cacheable(value = "artistPages", key = "#pageable.pageNumber + '-' + #pageable.pageSize")
     public Page<ArtistDTO> getAllArtists(Pageable pageable) {
         return artistRepository.findAll(pageable).map(this::mapToDTO);
     }
 
     // Update
-    @CachePut(value = "artists", key = "#id")
     public ArtistDTO updateArtist(Long id, ArtistDTO artistDTO) {
         Artist artist = artistRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Artist not found"));
@@ -83,7 +76,6 @@ public class ArtistService {
     }
 
     // Delete
-    @CacheEvict(value = "artists", key = "#id")
     public void deleteArtist(Long id) {
         Artist artist = artistRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Artist not found"));
@@ -91,7 +83,6 @@ public class ArtistService {
     }
 
     // Search artists
-    @Cacheable(value = "artistPages", key = "#query + '-' + #pageable.pageNumber + '-' + #pageable.pageSize")
     public Page<ArtistDTO> searchArtists(String query, Pageable pageable) {
         return artistRepository.findByNameContainingIgnoreCase(query, pageable).map(this::mapToDTO);
     }
