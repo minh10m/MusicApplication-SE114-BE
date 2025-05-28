@@ -2,6 +2,7 @@ package com.music.application.be.modules.user;
 
 
 import com.music.application.be.modules.user.dto.UserDTO;
+import com.music.application.be.modules.user.dto.UserResponseDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -31,8 +32,18 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    public List<User> getAllUsers() {
-        return userRepository.findAll();
+    public List<UserResponseDTO> getAllUsers() {
+        return userRepository.findAll()
+                .stream()
+                .map(user -> new UserResponseDTO(
+                        user.getId(),
+                        user.getRole(),
+                        user.getUsername(),
+                        user.getEmail(),
+                        user.getPhone(),
+                        user.getAvatar()
+                ))
+                .toList();
     }
 
     public void deleteUser(Long userId) {
