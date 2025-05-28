@@ -5,8 +5,6 @@ import com.music.application.be.modules.song.SongRepository;
 import com.music.application.be.modules.user.User;
 import com.music.application.be.modules.user.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,7 +21,6 @@ public class ListeningHistoryService {
     private final UserRepository userRepository;
 
     @Transactional
-    @CacheEvict(value = "listeningHistory", key = "#userId")
     public Optional<ListeningHistory> addListeningHistory(Long userId, Long songId, Integer durationPlayed) {
         Optional<User> user = userRepository.findById(userId);
         Optional<Song> song = songRepository.findById(songId);
@@ -40,7 +37,6 @@ public class ListeningHistoryService {
     }
 
     @Transactional(readOnly = true)
-    @Cacheable(value = "listeningHistory", key = "#userId")
     public List<ListeningHistory> getListeningHistory(Long userId) {
         return listeningHistoryRepository.findByUserId(userId);
     }

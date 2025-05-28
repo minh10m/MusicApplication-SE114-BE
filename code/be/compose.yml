@@ -1,5 +1,0 @@
-services:
-  redis:
-    image: 7.4.3
-    ports:
-      - "6379:6379"

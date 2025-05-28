@@ -7,8 +7,6 @@ import com.music.application.be.modules.song.SongRepository;
 import com.music.application.be.modules.song_playlist.SongPlaylist;
 import com.music.application.be.modules.song_playlist.SongPlaylistRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -33,14 +31,13 @@ public class PlaylistService {
     private SongPlaylistRepository songPlaylistRepository;
 
     // Create
-    @CacheEvict(value = {"playlists", "playlistSearch", "songPlaylists"}, allEntries = true)
     public PlaylistDTO createPlaylist(PlaylistDTO playlistDTO) {
         Playlist playlist = new Playlist();
         playlist.setName(playlistDTO.getName());
         playlist.setDescription(playlistDTO.getDescription());
         playlist.setCreatedAt(LocalDateTime.now());
 
-        // Link genres
+        // Liên kết genres
         if (playlistDTO.getGenreIds() != null && !playlistDTO.getGenreIds().isEmpty()) {
             List<Genre> genres = genreRepository.findAllById(playlistDTO.getGenreIds());
             if (genres.size() != playlistDTO.getGenreIds().size()) {
@@ -51,7 +48,7 @@ public class PlaylistService {
 
         Playlist savedPlaylist = playlistRepository.save(playlist);
 
-        // Automatically add songs with matching genres
+        // Tự động thêm các bài hát có genre trùng
         if (!playlist.getGenres().isEmpty()) {
             List<Song> matchingSongs = songRepository.findByGenresIn(playlist.getGenres());
             for (Song song : matchingSongs) {
@@ -67,7 +64,6 @@ public class PlaylistService {
     }
 
     // Read by ID
-    @Cacheable(value = "playlists", key = "#id")
     public PlaylistDTO getPlaylistById(Long id) {
         Playlist playlist = playlistRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Playlist not found"));
@@ -75,13 +71,11 @@ public class PlaylistService {
     }
 
     // Read all with pagination
-    @Cacheable(value = "playlists", key = "#pageable.pageNumber + '-' + #pageable.pageSize")
     public Page<PlaylistDTO> getAllPlaylists(Pageable pageable) {
         return playlistRepository.findAll(pageable).map(this::mapToDTO);
     }
 
     // Update
-    @CacheEvict(value = {"playlists", "playlistSearch", "songPlaylists"}, allEntries = true)
     public PlaylistDTO updatePlaylist(Long id, PlaylistDTO playlistDTO) {
         Playlist playlist = playlistRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Playlist not found"));
@@ -89,7 +83,7 @@ public class PlaylistService {
         playlist.setName(playlistDTO.getName());
         playlist.setDescription(playlistDTO.getDescription());
 
-        // Update genres
+        // Cập nhật genres
         if (playlistDTO.getGenreIds() != null) {
             List<Genre> genres = genreRepository.findAllById(playlistDTO.getGenreIds());
             if (genres.size() != playlistDTO.getGenreIds().size()) {
@@ -100,11 +94,11 @@ public class PlaylistService {
             playlist.setGenres(null);
         }
 
-        // Remove old songs
+        // Xóa các bài hát cũ
         List<SongPlaylist> existingSongs = songPlaylistRepository.findByPlaylistIdOrderByAddedAtDesc(id);
         songPlaylistRepository.deleteAll(existingSongs);
 
-        // Automatically add songs with matching genres
+        // Tự động thêm các bài hát có genre trùng
         if (playlist.getGenres() != null && !playlist.getGenres().isEmpty()) {
             List<Song> matchingSongs = songRepository.findByGenresIn(playlist.getGenres());
             for (Song song : matchingSongs) {
@@ -121,7 +115,6 @@ public class PlaylistService {
     }
 
     // Delete
-    @CacheEvict(value = {"playlists", "playlistSearch", "songPlaylists"}, key = "#id")
     public void deletePlaylist(Long id) {
         Playlist playlist = playlistRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Playlist not found"));
@@ -129,7 +122,6 @@ public class PlaylistService {
     }
 
     // Search playlists
-    @Cacheable(value = "playlistSearch", key = "#query + '-' + #pageable.pageNumber + '-' + #pageable.pageSize")
     public Page<PlaylistDTO> searchPlaylists(String query, Pageable pageable) {
         return playlistRepository.findByNameContainingIgnoreCase(query, pageable).map(this::mapToDTO);
     }
