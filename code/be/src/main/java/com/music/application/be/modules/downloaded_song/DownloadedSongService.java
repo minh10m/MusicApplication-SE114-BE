@@ -5,6 +5,8 @@ import com.music.application.be.modules.song.SongRepository;
 import com.music.application.be.modules.user.User;
 import com.music.application.be.modules.user.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -24,6 +26,7 @@ public class DownloadedSongService {
     private SongRepository songRepository;
 
     // Add downloaded song
+    @CacheEvict(value = {"downloadedSongs", "downloadedSongsSearch"}, key = "#userId")
     public DownloadedSongDTO addDownloadedSong(Long userId, Long songId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -41,17 +44,20 @@ public class DownloadedSongService {
     }
 
     // Get downloaded songs
+    @Cacheable(value = "downloadedSongs", key = "#userId + '-' + #pageable.pageNumber + '-' + #pageable.pageSize")
     public Page<DownloadedSongDTO> getDownloadedSongs(Long userId, Pageable pageable) {
         return downloadedSongRepository.findByUserId(userId, pageable).map(this::mapToDTO);
     }
 
     // Search downloaded songs
+    @Cacheable(value = "downloadedSongsSearch", key = "#userId + '-' + #query + '-' + #pageable.pageNumber + '-' + #pageable.pageSize")
     public Page<DownloadedSongDTO> searchDownloadedSongs(Long userId, String query, Pageable pageable) {
         return downloadedSongRepository.findByUserIdAndSongTitleContainingIgnoreCase(userId, query, pageable)
                 .map(this::mapToDTO);
     }
 
     // Remove downloaded song
+    @CacheEvict(value = {"downloadedSongs", "downloadedSongsSearch"}, key = "#downloadedSong.user.id")
     public void removeDownloadedSong(Long id) {
         DownloadedSong downloadedSong = downloadedSongRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Downloaded song not found"));
