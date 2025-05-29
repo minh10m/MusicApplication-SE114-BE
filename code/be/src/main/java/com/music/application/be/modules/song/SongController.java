@@ -1,5 +1,7 @@
 package com.music.application.be.modules.song;
 
+import com.music.application.be.modules.comment.CommentDTO;
+import com.music.application.be.modules.comment.CommentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -8,12 +10,16 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/songs")
 public class SongController {
 
     @Autowired
     private SongService songService;
+    @Autowired
+    private CommentService commentService;
 
     @PostMapping
     public ResponseEntity<SongDTO> createSong(
@@ -86,5 +92,40 @@ public class SongController {
     @GetMapping("/{id}/share")
     public ResponseEntity<String> shareSong(@PathVariable Long id) {
         return ResponseEntity.ok(songService.shareSong(id));
+    }
+
+    //Comment để chung với song controller vì comment liên kết chặt với Song
+    @PostMapping("/{id}/comments")
+    public ResponseEntity<CommentDTO> createComment(
+            @PathVariable Long id,
+            @RequestParam Long userId,
+            @RequestParam String content,
+            @RequestParam(required = false) Long parentId) {
+        CommentDTO result = commentService.createComment(id, userId, content, parentId);
+        return ResponseEntity.ok(result);
+    }
+
+    @PostMapping("/{songId}/comments/{commentId}/like")
+    public ResponseEntity<CommentDTO> likeComment(
+            @PathVariable Long songId,
+            @PathVariable Long commentId,
+            @RequestParam Long userId) {
+        CommentDTO result = commentService.likeComment(commentId, userId);
+        return ResponseEntity.ok(result);
+    }
+
+    @DeleteMapping("/{songId}/comments/{commentId}/unlike")
+    public ResponseEntity<CommentDTO> unlikeComment(
+            @PathVariable Long songId,
+            @PathVariable Long commentId,
+            @RequestParam Long userId) {
+        CommentDTO result = commentService.unlikeComment(commentId, userId);
+        return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/{id}/comments")
+    public ResponseEntity<List<CommentDTO>> getCommentsBySongId(@PathVariable Long id) {
+        List<CommentDTO> result = commentService.getCommentsBySongId(id);
+        return ResponseEntity.ok(result);
     }
 }

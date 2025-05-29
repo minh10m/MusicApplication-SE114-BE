@@ -65,7 +65,7 @@ public class AuthenticationService {
         user.setEmail(request.getEmail());
         user.setPhone(request.getPhone());
         user.setRole(request.getRole());
-        user.setAvatar(DEFAULT_AVATAR_URL); // Sử dụng avatar mặc định nếu không upload
+        user.setAvatar(DEFAULT_AVATAR_URL);
 
         repository.save(user);
 
