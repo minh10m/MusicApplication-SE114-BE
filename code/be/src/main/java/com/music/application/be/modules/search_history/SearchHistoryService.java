@@ -3,6 +3,8 @@ package com.music.application.be.modules.search_history;
 import com.music.application.be.modules.user.User;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -22,14 +24,14 @@ public class SearchHistoryService {
         return searchHistoryRepository.save(searchHistory);
     }
 
+    @Cacheable(value = "searchHistory", key = "#user.id")
     public List<SearchHistory> getSearchHistoryByUser(User user) {
         return searchHistoryRepository.findByUserOrderBySearchedAtDesc(user);
     }
 
+    @CacheEvict(value = "searchHistory", key = "#user.id")
     public void clearSearchHistory(User user) {
         List<SearchHistory> userHistory = searchHistoryRepository.findByUserOrderBySearchedAtDesc(user);
         searchHistoryRepository.deleteAll(userHistory);
     }
 }
-
-

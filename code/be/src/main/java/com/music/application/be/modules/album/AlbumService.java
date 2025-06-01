@@ -4,9 +4,13 @@ import com.music.application.be.modules.artist.Artist;
 import com.music.application.be.modules.artist.ArtistRepository;
 import com.music.application.be.modules.song.Song;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+
 import java.util.stream.Collectors;
 
 @Service
@@ -19,6 +23,7 @@ public class AlbumService {
     private ArtistRepository artistRepository;
 
     // Create
+    @CachePut(value = "albums", key = "#result.id")
     public AlbumDTO createAlbum(AlbumDTO albumDTO) {
         Artist artist = artistRepository.findById(albumDTO.getArtistId())
                 .orElseThrow(() -> new RuntimeException("Artist not found"));
@@ -35,6 +40,7 @@ public class AlbumService {
     }
 
     // Read by ID
+    @Cacheable(value = "albums", key = "#id")
     public AlbumDTO getAlbumById(Long id) {
         Album album = albumRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Album not found"));
@@ -42,11 +48,13 @@ public class AlbumService {
     }
 
     // Read all with pagination
+    @Cacheable(value = "albumsPage", key = "#pageable.pageNumber + '-' + #pageable.pageSize")
     public Page<AlbumDTO> getAllAlbums(Pageable pageable) {
         return albumRepository.findAll(pageable).map(this::mapToDTO);
     }
 
     // Update
+    @CachePut(value = "albums", key = "#id")
     public AlbumDTO updateAlbum(Long id, AlbumDTO albumDTO) {
         Album album = albumRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Album not found"));
@@ -65,6 +73,7 @@ public class AlbumService {
     }
 
     // Delete
+    @CacheEvict(value = "albums", key = "#id")
     public void deleteAlbum(Long id) {
         Album album = albumRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Album not found"));
@@ -72,11 +81,13 @@ public class AlbumService {
     }
 
     // Search albums
+    @Cacheable(value = "albumsSearch", key = "#query + '-' + #pageable.pageNumber + '-' + #pageable.pageSize")
     public Page<AlbumDTO> searchAlbums(String query, Pageable pageable) {
         return albumRepository.findByNameContainingIgnoreCase(query, pageable).map(this::mapToDTO);
     }
 
     // Get albums by artist
+    @Cacheable(value = "albumsByArtist", key = "#artistId + '-' + #pageable.pageNumber + '-' + #pageable.pageSize")
     public Page<AlbumDTO> getAlbumsByArtist(Long artistId, Pageable pageable) {
         return albumRepository.findByArtistId(artistId, pageable).map(this::mapToDTO);
     }

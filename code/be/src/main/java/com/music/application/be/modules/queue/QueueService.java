@@ -2,10 +2,11 @@ package com.music.application.be.modules.queue;
 
 import com.music.application.be.modules.song.Song;
 import com.music.application.be.modules.user.User;
-import com.music.application.be.modules.queue.Queue;
-import com.music.application.be.modules.queue.QueueRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -27,6 +28,7 @@ public class QueueService {
         return queueRepository.save(queueItem);
     }
 
+    @Cacheable(value = "userQueue", key = "#user.id")
     public List<Queue> getUserQueue(User user) {
         return queueRepository.findByUserOrderByPositionAsc(user);
     }
@@ -35,10 +37,13 @@ public class QueueService {
         return queueRepository.findById(id);
     }
 
+    @CacheEvict(value = "userQueue", key = "#user.id")
     public void removeFromQueue(Long id) {
-        queueRepository.deleteById(id);
+        queueRepository.findById(id).ifPresent(queueItem ->
+                queueRepository.deleteById(id));
     }
 
+    @CachePut(value = "userQueue", key = "#user.id")
     public void updatePosition(Long id, Integer newPosition) {
         queueRepository.findById(id).ifPresent(queueItem -> {
             queueItem.setPosition(newPosition);
@@ -46,6 +51,7 @@ public class QueueService {
         });
     }
 
+    @CacheEvict(value = "userQueue", key = "#user.id")
     public void clearUserQueue(User user) {
         queueRepository.deleteAllByUser(user);
     }

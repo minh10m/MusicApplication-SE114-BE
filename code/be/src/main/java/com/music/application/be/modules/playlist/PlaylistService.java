@@ -7,6 +7,9 @@ import com.music.application.be.modules.song.SongRepository;
 import com.music.application.be.modules.song_playlist.SongPlaylist;
 import com.music.application.be.modules.song_playlist.SongPlaylistRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -31,6 +34,7 @@ public class PlaylistService {
     private SongPlaylistRepository songPlaylistRepository;
 
     // Create
+    @CachePut(value = "playlists", key = "#result.id")
     public PlaylistDTO createPlaylist(PlaylistDTO playlistDTO) {
         Playlist playlist = new Playlist();
         playlist.setName(playlistDTO.getName());
@@ -64,6 +68,7 @@ public class PlaylistService {
     }
 
     // Read by ID
+    @Cacheable(value = "playlists", key = "#id")
     public PlaylistDTO getPlaylistById(Long id) {
         Playlist playlist = playlistRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Playlist not found"));
@@ -71,11 +76,13 @@ public class PlaylistService {
     }
 
     // Read all with pagination
+    @Cacheable(value = "playlistsPage", key = "#pageable.pageNumber + '-' + #pageable.pageSize")
     public Page<PlaylistDTO> getAllPlaylists(Pageable pageable) {
         return playlistRepository.findAll(pageable).map(this::mapToDTO);
     }
 
     // Update
+    @CachePut(value = "playlists", key = "#id")
     public PlaylistDTO updatePlaylist(Long id, PlaylistDTO playlistDTO) {
         Playlist playlist = playlistRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Playlist not found"));
@@ -115,6 +122,7 @@ public class PlaylistService {
     }
 
     // Delete
+    @CacheEvict(value = "playlists", key = "#id")
     public void deletePlaylist(Long id) {
         Playlist playlist = playlistRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Playlist not found"));
@@ -122,6 +130,7 @@ public class PlaylistService {
     }
 
     // Search playlists
+    @Cacheable(value = "playlistsSearch", key = "#query + '-' + #pageable.pageNumber + '-' + #pageable.pageSize")
     public Page<PlaylistDTO> searchPlaylists(String query, Pageable pageable) {
         return playlistRepository.findByNameContainingIgnoreCase(query, pageable).map(this::mapToDTO);
     }

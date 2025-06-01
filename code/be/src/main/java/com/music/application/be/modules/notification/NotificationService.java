@@ -4,6 +4,9 @@ import com.music.application.be.modules.notification.dto.CreateNotificationReque
 import com.music.application.be.modules.notification.dto.NotificationResponse;
 import com.music.application.be.modules.user.User;
 import com.music.application.be.modules.user.UserRepository;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -25,6 +28,7 @@ public class NotificationService {
     }
 
     @Transactional
+    @CachePut(value = "notifications", key = "#result.id")
     public NotificationResponse createNotification(CreateNotificationRequest request) {
         User user = userRepository.findById(request.getUserId())
                 .orElseThrow(() -> new Error("User not found with id: " + request.getUserId()));
@@ -42,6 +46,7 @@ public class NotificationService {
     }
 
     @Transactional
+    @CachePut(value = "notifications", key = "#result.id")
     public NotificationResponse createNotificationForUser(Long userId, String title, String content, NotificationType type) {
         CreateNotificationRequest request = new CreateNotificationRequest();
         request.setUserId(userId);
@@ -51,16 +56,18 @@ public class NotificationService {
         return createNotification(request);
     }
 
+    @Cacheable(value = "userNotifications", key = "#userId")
     public List<Notification> getUserNotifications(Long userId) {
         try {
             return notificationRepository.findByUserIdOrderByCreatedAtDesc(userId);
         } catch (Exception e) {
             // Log the error (you should add proper logging here)
             System.err.println("Error fetching user notifications: " + e.getMessage());
-            return Collections.emptyList(); // Return empty list instead of null
+            return Collections.emptyList();
         }
     }
 
+    @Cacheable(value = "userNotificationsPaginated", key = "#userId + '-' + #pageable.pageNumber + '-' + #pageable.pageSize")
     public Page<Notification> getUserNotificationsPaginated(Long userId, Pageable pageable) {
         try {
             return notificationRepository.findByUserIdOrderByCreatedAtDesc(userId, pageable);
@@ -71,27 +78,30 @@ public class NotificationService {
         }
     }
 
+    @Cacheable(value = "unreadNotifications", key = "#userId")
     public List<Notification> getUnreadNotifications(Long userId) {
         try {
             return notificationRepository.findByUserIdAndReadFalseOrderByCreatedAtDesc(userId);
         } catch (Exception e) {
-            // Log the error
+            // Log the Book error
             System.err.println("Error fetching unread notifications: " + e.getMessage());
             return Collections.emptyList();
         }
     }
 
+    @Cacheable(value = "unreadNotificationsCount", key = "#userId")
     public long countUnreadNotifications(Long userId) {
         try {
             return notificationRepository.countByUserIdAndReadFalse(userId);
         } catch (Exception e) {
             // Log the error
             System.err.println("Error counting unread notifications: " + e.getMessage());
-            return 0; // Return 0 instead of throwing exception for this case
+            return 0;
         }
     }
 
     @Transactional
+    @CacheEvict(value = {"userNotifications", "userNotificationsPaginated", "unreadNotifications", "unreadNotificationsCount"}, key = "#userId")
     public int markAllAsRead(Long userId) {
         try {
             return notificationRepository.markAllAsRead(userId);
@@ -103,6 +113,7 @@ public class NotificationService {
     }
 
     @Transactional
+    @CacheEvict(value = {"userNotifications", "userNotificationsPaginated", "unreadNotifications", "unreadNotificationsCount"}, key = "#userId")
     public int deleteAllByUserId(Long userId) {
         try {
             return notificationRepository.deleteAllByUserId(userId);
@@ -113,6 +124,7 @@ public class NotificationService {
         }
     }
 
+    @Cacheable(value = "notifications", key = "#id + '-' + #userId")
     public Optional<Notification> getNotificationByIdAndUserId(Long id, Long userId) {
         try {
             return notificationRepository.findByIdAndUserId(id, userId);
