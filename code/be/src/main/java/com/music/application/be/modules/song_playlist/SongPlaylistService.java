@@ -4,10 +4,10 @@ import com.music.application.be.modules.playlist.Playlist;
 import com.music.application.be.modules.playlist.PlaylistRepository;
 import com.music.application.be.modules.song.Song;
 import com.music.application.be.modules.song.SongRepository;
-import com.music.application.be.modules.song_playlist.dto.SongPlaylistDTO;
-import com.music.application.be.modules.song_playlist.dto.SongPlaylistRequestDTO;
-import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -25,18 +25,19 @@ public class SongPlaylistService {
     private PlaylistRepository playlistRepository;
 
     // Add song to playlist
-    public SongPlaylistDTO addSongToPlaylist(SongPlaylistRequestDTO requestDTO) {
-        Song song = songRepository.findById(requestDTO.getSongId())
-                .orElseThrow(() -> new EntityNotFoundException("Song not found with id: " + requestDTO.getSongId()));
-        Playlist playlist = playlistRepository.findById(requestDTO.getPlaylistId())
-                .orElseThrow(() -> new EntityNotFoundException("Playlist not found with id: " + requestDTO.getPlaylistId()));
+    @CacheEvict(value = "songPlaylists", key = "#songPlaylistDTO.playlistId")
+    public SongPlaylistDTO addSongToPlaylist(SongPlaylistDTO songPlaylistDTO) {
+        Song song = songRepository.findById(songPlaylistDTO.getSongId())
+                .orElseThrow(() -> new RuntimeException("Song not found"));
+        Playlist playlist = playlistRepository.findById(songPlaylistDTO.getPlaylistId())
+                .orElseThrow(() -> new RuntimeException("Playlist not found"));
 
         // Kiểm tra xem bài hát đã có trong playlist chưa
         boolean exists = songPlaylistRepository.findByPlaylistIdOrderByAddedAtDesc(playlist.getId())
                 .stream()
                 .anyMatch(sp -> sp.getSong().getId().equals(song.getId()));
         if (exists) {
-            throw new IllegalStateException("Song with id " + song.getId() + " already exists in playlist with id " + playlist.getId());
+            throw new RuntimeException("Song already exists in playlist");
         }
 
         SongPlaylist songPlaylist = new SongPlaylist();
@@ -48,50 +49,25 @@ public class SongPlaylistService {
         return mapToDTO(savedSongPlaylist);
     }
 
-    // Update song or playlist in SongPlaylist
-    public SongPlaylistDTO updateSongPlaylist(Long id, SongPlaylistRequestDTO requestDTO) {
+    // Update addedAt
+    @CachePut(value = "songPlaylists", key = "#id")
+    public SongPlaylistDTO updateSongPlaylist(Long id, SongPlaylistDTO songPlaylistDTO) {
         SongPlaylist songPlaylist = songPlaylistRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("SongPlaylist not found with id: " + id));
+                .orElseThrow(() -> new RuntimeException("SongPlaylist not found"));
 
-        // Cập nhật song nếu có thay đổi
-        if (!songPlaylist.getSong().getId().equals(requestDTO.getSongId())) {
-            Song newSong = songRepository.findById(requestDTO.getSongId())
-                    .orElseThrow(() -> new EntityNotFoundException("Song not found with id: " + requestDTO.getSongId()));
-            // Kiểm tra xem bài hát mới đã có trong playlist chưa
-            boolean exists = songPlaylistRepository.findByPlaylistIdOrderByAddedAtDesc(songPlaylist.getPlaylist().getId())
-                    .stream()
-                    .anyMatch(sp -> sp.getSong().getId().equals(newSong.getId()) && !sp.getId().equals(id));
-            if (exists) {
-                throw new IllegalStateException("Song with id " + newSong.getId() + " already exists in playlist with id " + songPlaylist.getPlaylist().getId());
-            }
-            songPlaylist.setSong(newSong);
+        if (songPlaylistDTO.getAddedAt() != null) {
+            songPlaylist.setAddedAt(songPlaylistDTO.getAddedAt());
         }
-
-        // Cập nhật playlist nếu có thay đổi
-        if (!songPlaylist.getPlaylist().getId().equals(requestDTO.getPlaylistId())) {
-            Playlist newPlaylist = playlistRepository.findById(requestDTO.getPlaylistId())
-                    .orElseThrow(() -> new EntityNotFoundException("Playlist not found with id: " + requestDTO.getPlaylistId()));
-            // Kiểm tra xem bài hát đã có trong playlist mới chưa
-            boolean exists = songPlaylistRepository.findByPlaylistIdOrderByAddedAtDesc(newPlaylist.getId())
-                    .stream()
-                    .anyMatch(sp -> sp.getSong().getId().equals(songPlaylist.getSong().getId()));
-            if (exists) {
-                throw new IllegalStateException("Song with id " + songPlaylist.getSong().getId() + " already exists in playlist with id " + newPlaylist.getId());
-            }
-            songPlaylist.setPlaylist(newPlaylist);
-        }
-
-        // Tự động cập nhật addedAt
-        songPlaylist.setAddedAt(LocalDateTime.now());
 
         SongPlaylist updatedSongPlaylist = songPlaylistRepository.save(songPlaylist);
         return mapToDTO(updatedSongPlaylist);
     }
 
     // Remove song from playlist
+    @CacheEvict(value = "songPlaylists", key = "#id")
     public void removeSongFromPlaylist(Long id) {
         SongPlaylist songPlaylist = songPlaylistRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("SongPlaylist not found with id: " + id));
+                .orElseThrow(() -> new RuntimeException("SongPlaylist not found"));
         songPlaylistRepository.delete(songPlaylist);
     }
 
