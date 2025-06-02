@@ -5,6 +5,8 @@ import com.music.application.be.modules.playlist.PlaylistRepository;
 import com.music.application.be.modules.song.Song;
 import com.music.application.be.modules.song.SongRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -22,13 +24,14 @@ public class SongPlaylistService {
     private PlaylistRepository playlistRepository;
 
     // Add song to playlist
+    @CacheEvict(value = "songPlaylists", key = "#songPlaylistDTO.playlistId")
     public SongPlaylistDTO addSongToPlaylist(SongPlaylistDTO songPlaylistDTO) {
         Song song = songRepository.findById(songPlaylistDTO.getSongId())
                 .orElseThrow(() -> new RuntimeException("Song not found"));
         Playlist playlist = playlistRepository.findById(songPlaylistDTO.getPlaylistId())
                 .orElseThrow(() -> new RuntimeException("Playlist not found"));
 
-        // Kiểm tra xem bài hát đã có trong playlist chưa
+        // Check if song already exists in playlist
         boolean exists = songPlaylistRepository.findByPlaylistIdOrderByAddedAtDesc(playlist.getId())
                 .stream()
                 .anyMatch(sp -> sp.getSong().getId().equals(song.getId()));
@@ -46,6 +49,7 @@ public class SongPlaylistService {
     }
 
     // Update addedAt
+    @CacheEvict(value = "songPlaylists", key = "#songPlaylistDTO.playlistId")
     public SongPlaylistDTO updateSongPlaylist(Long id, SongPlaylistDTO songPlaylistDTO) {
         SongPlaylist songPlaylist = songPlaylistRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("SongPlaylist not found"));
@@ -59,6 +63,7 @@ public class SongPlaylistService {
     }
 
     // Remove song from playlist
+    @CacheEvict(value = "songPlaylists", key = "#result.playlistId")
     public void removeSongFromPlaylist(Long id) {
         SongPlaylist songPlaylist = songPlaylistRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("SongPlaylist not found"));
