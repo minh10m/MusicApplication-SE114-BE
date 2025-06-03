@@ -1,6 +1,7 @@
 package com.music.application.be.modules.user;
 
 import com.music.application.be.modules.artist.Artist;
+import com.music.application.be.modules.forget_password.ForgetPassword;
 import com.music.application.be.modules.playlist.Playlist;
 import com.music.application.be.modules.role.Role;
 import com.music.application.be.modules.song.Song;
@@ -33,6 +34,7 @@ public class User implements UserDetails {
 
     @Getter
     @Enumerated(value = EnumType.STRING)
+    @Column(name = "role")
     private Role role;
 
     @Column(nullable = false, unique = true)
@@ -88,6 +90,9 @@ public class User implements UserDetails {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Token> tokens;
+
+    @OneToOne(mappedBy = "user")
+    private ForgetPassword forgetPassword;
 
     @Override
     public boolean isAccountNonExpired() {

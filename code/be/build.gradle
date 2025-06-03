@@ -70,6 +70,8 @@ dependencies {
 
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
 
+	implementation("org.springframework.boot:spring-boot-starter-mail:3.5.0")
+
 }
 
 tasks.named('test') {
