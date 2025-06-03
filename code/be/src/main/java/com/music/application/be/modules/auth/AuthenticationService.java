@@ -1,5 +1,7 @@
 package com.music.application.be.modules.auth;
 
+import com.music.application.be.modules.auth.dto.LoginRequest;
+import com.music.application.be.modules.auth.dto.RegisterRequest;
 import com.music.application.be.modules.token.JwtService;
 import com.music.application.be.modules.token.Token;
 import com.music.application.be.modules.token.TokenRepository;
@@ -7,7 +9,6 @@ import com.music.application.be.modules.user.User;
 import com.music.application.be.modules.user.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

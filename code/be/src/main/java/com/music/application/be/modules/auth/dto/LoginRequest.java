@@ -1,4 +1,4 @@
-package com.music.application.be.modules.auth;
+package com.music.application.be.modules.auth.dto;
 
 import lombok.Data;
 
