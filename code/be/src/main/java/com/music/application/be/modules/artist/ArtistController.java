@@ -1,7 +1,5 @@
 package com.music.application.be.modules.artist;
 
-import com.music.application.be.modules.album.AlbumDTO;
-import com.music.application.be.modules.song.SongDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;

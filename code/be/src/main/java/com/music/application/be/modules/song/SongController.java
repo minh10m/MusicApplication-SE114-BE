@@ -2,6 +2,9 @@ package com.music.application.be.modules.song;
 
 import com.music.application.be.modules.comment.CommentDTO;
 import com.music.application.be.modules.comment.CommentService;
+import com.music.application.be.modules.song.DTO.CreateSongDTO;
+import com.music.application.be.modules.song.DTO.SongDTO;
+import com.music.application.be.modules.song.DTO.UpdateSongDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -18,15 +21,17 @@ public class SongController {
 
     @Autowired
     private SongService songService;
+
     @Autowired
     private CommentService commentService;
 
+    // Only support MP3, WAV file
     @PostMapping
     public ResponseEntity<SongDTO> createSong(
-            @RequestPart("song") SongDTO songDTO,
+            @RequestPart("song") CreateSongDTO createSongDTO,
             @RequestPart("audio") MultipartFile audioFile,
             @RequestPart("thumbnail") MultipartFile thumbnailFile) throws Exception {
-        return ResponseEntity.ok(songService.createSong(songDTO, audioFile, thumbnailFile));
+        return ResponseEntity.ok(songService.createSong(createSongDTO, audioFile, thumbnailFile));
     }
 
     @GetMapping("/{id}")
@@ -45,10 +50,10 @@ public class SongController {
     @PutMapping("/{id}")
     public ResponseEntity<SongDTO> updateSong(
             @PathVariable Long id,
-            @RequestPart("song") SongDTO songDTO,
+            @RequestPart("song") UpdateSongDTO updateSongDTO,
             @RequestPart(value = "audio", required = false) MultipartFile audioFile,
             @RequestPart(value = "thumbnail", required = false) MultipartFile thumbnailFile) throws Exception {
-        return ResponseEntity.ok(songService.updateSong(id, songDTO, audioFile, thumbnailFile));
+        return ResponseEntity.ok(songService.updateSong(id, updateSongDTO, audioFile, thumbnailFile));
     }
 
     @DeleteMapping("/{id}")
@@ -94,7 +99,6 @@ public class SongController {
         return ResponseEntity.ok(songService.shareSong(id));
     }
 
-    //Comment để chung với song controller vì comment liên kết chặt với Song
     @PostMapping("/{id}/comments")
     public ResponseEntity<CommentDTO> createComment(
             @PathVariable Long id,
@@ -127,5 +131,12 @@ public class SongController {
     public ResponseEntity<List<CommentDTO>> getCommentsBySongId(@PathVariable Long id) {
         List<CommentDTO> result = commentService.getCommentsBySongId(id);
         return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/top")
+    public ResponseEntity<Page<SongDTO>> getTopSongsByViewCount(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return ResponseEntity.ok(songService.getTopSongsByViewCount(page, size));
     }
 }

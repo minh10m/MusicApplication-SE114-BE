@@ -54,6 +54,8 @@ dependencies {
 	implementation 'com.cloudinary:cloudinary-taglib:2.0.0'
 	// Dotenv-java dependency
 	implementation 'io.github.cdimascio:dotenv-java:2.2.4'
+	// For handle music file
+	implementation("net.jthink:jaudiotagger:3.0.1")
 }
 
 tasks.named('test') {
