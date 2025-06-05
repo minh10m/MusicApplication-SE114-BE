@@ -1,5 +1,8 @@
 package com.music.application.be.modules.favorite_album;
 
+import com.music.application.be.modules.favorite_album.dto.AddFavoriteAlbumRequestDTO;
+import com.music.application.be.modules.favorite_album.dto.FavoriteAlbumDTO;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -18,9 +21,8 @@ public class FavoriteAlbumController {
     // Add favorite album
     @PostMapping
     public ResponseEntity<FavoriteAlbumDTO> addFavoriteAlbum(
-            @RequestParam Long userId,
-            @RequestParam Long albumId) {
-        return ResponseEntity.ok(favoriteAlbumService.addFavoriteAlbum(userId, albumId));
+            @Valid @RequestBody AddFavoriteAlbumRequestDTO requestDTO) {
+        return ResponseEntity.ok(favoriteAlbumService.addFavoriteAlbum(requestDTO.getUserId(), requestDTO.getAlbumId()));
     }
 
     // Get favorite albums

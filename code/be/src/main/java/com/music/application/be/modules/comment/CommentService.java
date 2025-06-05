@@ -1,5 +1,8 @@
 package com.music.application.be.modules.comment;
 
+import com.music.application.be.modules.comment.dto.CommentActionResponseDTO;
+import com.music.application.be.modules.comment.dto.CommentResponseDTO;
+import com.music.application.be.modules.comment.dto.CreateCommentDTO;
 import com.music.application.be.modules.song.Song;
 import com.music.application.be.modules.song.SongRepository;
 import com.music.application.be.modules.user.User;
@@ -7,6 +10,7 @@ import com.music.application.be.modules.user.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -26,31 +30,36 @@ public class CommentService {
     @Autowired
     private UserRepository userRepository;
 
-    public CommentDTO createComment(Long songId, Long userId, String content, Long parentId) {
+    @Transactional
+    public CommentResponseDTO createComment(Long songId, CreateCommentDTO createCommentDTO) {
         Song song = songRepository.findById(songId)
                 .orElseThrow(() -> new EntityNotFoundException("Song not found with id: " + songId));
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + userId));
+        User user = userRepository.findById(createCommentDTO.getUserId())
+                .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + createCommentDTO.getUserId()));
 
         Comment comment = new Comment();
         comment.setSong(song);
         comment.setUser(user);
-        comment.setContent(content);
-        if (parentId != null) {
-            Comment parent = commentRepository.findById(parentId)
-                    .orElseThrow(() -> new EntityNotFoundException("Parent comment not found with id: " + parentId));
+        comment.setContent(createCommentDTO.getContent());
+
+        if (createCommentDTO.getParentId() != null) {
+            Comment parent = commentRepository.findById(createCommentDTO.getParentId())
+                    .orElseThrow(() -> new EntityNotFoundException("Parent comment not found"));
             comment.setParent(parent);
         }
-        comment = commentRepository.save(comment);
 
-        return mapToDTO(comment);
+        comment = commentRepository.save(comment);
+        return mapToResponseDTOWithReplies(comment);
     }
 
-    public CommentDTO likeComment(Long commentId, Long userId) {
+    @Transactional
+    public CommentActionResponseDTO likeComment(Long commentId, Long userId) {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new EntityNotFoundException("Comment not found with id: " + commentId));
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + userId));
+
+        CommentActionResponseDTO responseDTO = new CommentActionResponseDTO();
 
         if (!commentLikeRepository.existsByCommentIdAndUserId(commentId, userId)) {
             CommentLike like = new CommentLike();
@@ -59,34 +68,53 @@ public class CommentService {
             commentLikeRepository.save(like);
             comment.setLikes(comment.getLikes() + 1);
             commentRepository.save(comment);
+
+            responseDTO.setSuccess(true);
+            responseDTO.setMessage("Comment liked successfully");
+        } else {
+            responseDTO.setSuccess(false);
+            responseDTO.setMessage("User has already liked this comment");
         }
 
-        return mapToDTO(comment);
+        responseDTO.setComment(mapToResponseDTOWithReplies(comment));
+        return responseDTO;
     }
 
-    public CommentDTO unlikeComment(Long commentId, Long userId) {
+    @Transactional
+    public CommentActionResponseDTO unlikeComment(Long commentId, Long userId) {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new EntityNotFoundException("Comment not found with id: " + commentId));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + userId));
+
+        CommentActionResponseDTO responseDTO = new CommentActionResponseDTO();
 
         if (commentLikeRepository.existsByCommentIdAndUserId(commentId, userId)) {
             commentLikeRepository.deleteByCommentIdAndUserId(commentId, userId);
             comment.setLikes(comment.getLikes() - 1);
             if (comment.getLikes() < 0) comment.setLikes(0L); // Đảm bảo không âm
             commentRepository.save(comment);
+
+            responseDTO.setSuccess(true);
+            responseDTO.setMessage("Comment unliked successfully");
+        } else {
+            responseDTO.setSuccess(false);
+            responseDTO.setMessage("User has not liked this comment");
         }
 
-        return mapToDTO(comment);
+        responseDTO.setComment(mapToResponseDTOWithReplies(comment));
+        return responseDTO;
     }
 
-    public List<CommentDTO> getCommentsBySongId(Long songId) {
+    public List<CommentResponseDTO> getCommentsBySongId(Long songId) {
         List<Comment> comments = commentRepository.findBySongIdAndParentIsNull(songId);
         return comments.stream()
-                .map(this::mapToDTOWithReplies)
+                .map(this::mapToResponseDTOWithReplies)
                 .collect(Collectors.toList());
     }
 
-    private CommentDTO mapToDTO(Comment comment) {
-        CommentDTO dto = new CommentDTO();
+    private CommentResponseDTO mapToResponseDTO(Comment comment) {
+        CommentResponseDTO dto = new CommentResponseDTO();
         dto.setId(comment.getId());
         dto.setSongId(comment.getSong().getId());
         dto.setUserId(comment.getUser().getId());
@@ -97,11 +125,11 @@ public class CommentService {
         return dto;
     }
 
-    private CommentDTO mapToDTOWithReplies(Comment comment) {
-        CommentDTO dto = mapToDTO(comment);
+    private CommentResponseDTO mapToResponseDTOWithReplies(Comment comment) {
+        CommentResponseDTO dto = mapToResponseDTO(comment);
         List<Comment> replies = commentRepository.findByParentId(comment.getId());
         dto.setReplies(replies.stream()
-                .map(this::mapToDTO)
+                .map(this::mapToResponseDTO)
                 .collect(Collectors.toList()));
         return dto;
     }

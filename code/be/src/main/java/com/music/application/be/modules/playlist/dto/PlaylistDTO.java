@@ -1,11 +1,14 @@
-package com.music.application.be.modules.genre;
+package com.music.application.be.modules.playlist.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
 @Data
-public class GenreDTO {
+public class PlaylistDTO {
     private Long id;
 
     @NotBlank(message = "Name is mandatory")
@@ -14,4 +17,8 @@ public class GenreDTO {
 
     @Size(max = 1000, message = "Description must be less than 1000 characters")
     private String description;
+
+    private LocalDateTime createdAt;
+
+    private List<Long> genreIds;
 }

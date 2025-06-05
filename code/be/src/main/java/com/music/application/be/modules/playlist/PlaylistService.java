@@ -2,10 +2,13 @@ package com.music.application.be.modules.playlist;
 
 import com.music.application.be.modules.genre.Genre;
 import com.music.application.be.modules.genre.GenreRepository;
+import com.music.application.be.modules.playlist.dto.PlaylistDTO;
+import com.music.application.be.modules.playlist.dto.PlaylistRequestDTO;
 import com.music.application.be.modules.song.Song;
 import com.music.application.be.modules.song.SongRepository;
 import com.music.application.be.modules.song_playlist.SongPlaylist;
 import com.music.application.be.modules.song_playlist.SongPlaylistRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -31,17 +34,17 @@ public class PlaylistService {
     private SongPlaylistRepository songPlaylistRepository;
 
     // Create
-    public PlaylistDTO createPlaylist(PlaylistDTO playlistDTO) {
+    public PlaylistDTO createPlaylist(PlaylistRequestDTO playlistRequestDTO) {
         Playlist playlist = new Playlist();
-        playlist.setName(playlistDTO.getName());
-        playlist.setDescription(playlistDTO.getDescription());
+        playlist.setName(playlistRequestDTO.getName());
+        playlist.setDescription(playlistRequestDTO.getDescription());
         playlist.setCreatedAt(LocalDateTime.now());
 
         // Liên kết genres
-        if (playlistDTO.getGenreIds() != null && !playlistDTO.getGenreIds().isEmpty()) {
-            List<Genre> genres = genreRepository.findAllById(playlistDTO.getGenreIds());
-            if (genres.size() != playlistDTO.getGenreIds().size()) {
-                throw new RuntimeException("One or more genres not found");
+        if (playlistRequestDTO.getGenreIds() != null && !playlistRequestDTO.getGenreIds().isEmpty()) {
+            List<Genre> genres = genreRepository.findAllById(playlistRequestDTO.getGenreIds());
+            if (genres.size() != playlistRequestDTO.getGenreIds().size()) {
+                throw new EntityNotFoundException("One or more genres not found");
             }
             playlist.setGenres(genres);
         }
@@ -66,7 +69,7 @@ public class PlaylistService {
     // Read by ID
     public PlaylistDTO getPlaylistById(Long id) {
         Playlist playlist = playlistRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Playlist not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Playlist not found with id: " + id));
         return mapToDTO(playlist);
     }
 
@@ -76,18 +79,18 @@ public class PlaylistService {
     }
 
     // Update
-    public PlaylistDTO updatePlaylist(Long id, PlaylistDTO playlistDTO) {
+    public PlaylistDTO updatePlaylist(Long id, PlaylistRequestDTO playlistRequestDTO) {
         Playlist playlist = playlistRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Playlist not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Playlist not found with id: " + id));
 
-        playlist.setName(playlistDTO.getName());
-        playlist.setDescription(playlistDTO.getDescription());
+        playlist.setName(playlistRequestDTO.getName());
+        playlist.setDescription(playlistRequestDTO.getDescription());
 
         // Cập nhật genres
-        if (playlistDTO.getGenreIds() != null) {
-            List<Genre> genres = genreRepository.findAllById(playlistDTO.getGenreIds());
-            if (genres.size() != playlistDTO.getGenreIds().size()) {
-                throw new RuntimeException("One or more genres not found");
+        if (playlistRequestDTO.getGenreIds() != null) {
+            List<Genre> genres = genreRepository.findAllById(playlistRequestDTO.getGenreIds());
+            if (genres.size() != playlistRequestDTO.getGenreIds().size()) {
+                throw new EntityNotFoundException("One or more genres not found");
             }
             playlist.setGenres(genres);
         } else {
@@ -117,7 +120,7 @@ public class PlaylistService {
     // Delete
     public void deletePlaylist(Long id) {
         Playlist playlist = playlistRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Playlist not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Playlist not found with id: " + id));
 
         playlistRepository.delete(playlist);
     }
@@ -129,7 +132,9 @@ public class PlaylistService {
 
     // Share playlist
     public String sharePlaylist(Long id) {
-        return "https://musicapp.com/playlist/" + id;
+        Playlist playlist = playlistRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Playlist not found with id: " + id));
+        return "http://localhost:8080/api/playlists/" + id;
     }
 
     // Map entity to DTO
@@ -140,7 +145,6 @@ public class PlaylistService {
         dto.setDescription(playlist.getDescription());
         dto.setCreatedAt(playlist.getCreatedAt());
         dto.setGenreIds(playlist.getGenres().stream().map(Genre::getId).collect(Collectors.toList()));
-        List<SongPlaylist> songPlaylists = songPlaylistRepository.findByPlaylistIdOrderByAddedAtDesc(playlist.getId());
         return dto;
     }
 }

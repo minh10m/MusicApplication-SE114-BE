@@ -1,4 +1,4 @@
-package com.music.application.be.modules.favorite_song;
+package com.music.application.be.modules.favorite_song.dto;
 
 import lombok.Data;
 

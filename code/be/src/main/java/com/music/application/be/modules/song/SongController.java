@@ -1,10 +1,13 @@
 package com.music.application.be.modules.song;
 
-import com.music.application.be.modules.comment.CommentDTO;
 import com.music.application.be.modules.comment.CommentService;
-import com.music.application.be.modules.song.DTO.CreateSongDTO;
-import com.music.application.be.modules.song.DTO.SongDTO;
-import com.music.application.be.modules.song.DTO.UpdateSongDTO;
+import com.music.application.be.modules.comment.dto.CommentActionResponseDTO;
+import com.music.application.be.modules.comment.dto.CommentResponseDTO;
+import com.music.application.be.modules.comment.dto.CreateCommentDTO;
+import com.music.application.be.modules.song.dto.CreateSongDTO;
+import com.music.application.be.modules.song.dto.SongDTO;
+import com.music.application.be.modules.song.dto.UpdateSongDTO;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -89,48 +92,37 @@ public class SongController {
         return ResponseEntity.ok(songService.getSongsByGenre(genreId, pageable));
     }
 
-    @GetMapping("/{id}/thumbnail")
-    public ResponseEntity<String> getSongThumbnail(@PathVariable Long id) {
-        return ResponseEntity.ok(songService.getSongThumbnail(id));
-    }
-
     @GetMapping("/{id}/share")
     public ResponseEntity<String> shareSong(@PathVariable Long id) {
         return ResponseEntity.ok(songService.shareSong(id));
     }
 
     @PostMapping("/{id}/comments")
-    public ResponseEntity<CommentDTO> createComment(
+    public ResponseEntity<CommentResponseDTO> createComment(
             @PathVariable Long id,
-            @RequestParam Long userId,
-            @RequestParam String content,
-            @RequestParam(required = false) Long parentId) {
-        CommentDTO result = commentService.createComment(id, userId, content, parentId);
-        return ResponseEntity.ok(result);
+            @Valid @RequestBody CreateCommentDTO createCommentDTO) {
+        return ResponseEntity.ok(commentService.createComment(id, createCommentDTO));
     }
 
     @PostMapping("/{songId}/comments/{commentId}/like")
-    public ResponseEntity<CommentDTO> likeComment(
+    public ResponseEntity<CommentActionResponseDTO> likeComment(
             @PathVariable Long songId,
             @PathVariable Long commentId,
             @RequestParam Long userId) {
-        CommentDTO result = commentService.likeComment(commentId, userId);
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(commentService.likeComment(commentId, userId));
     }
 
     @DeleteMapping("/{songId}/comments/{commentId}/unlike")
-    public ResponseEntity<CommentDTO> unlikeComment(
+    public ResponseEntity<CommentActionResponseDTO> unlikeComment(
             @PathVariable Long songId,
             @PathVariable Long commentId,
             @RequestParam Long userId) {
-        CommentDTO result = commentService.unlikeComment(commentId, userId);
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(commentService.unlikeComment(commentId, userId));
     }
 
     @GetMapping("/{id}/comments")
-    public ResponseEntity<List<CommentDTO>> getCommentsBySongId(@PathVariable Long id) {
-        List<CommentDTO> result = commentService.getCommentsBySongId(id);
-        return ResponseEntity.ok(result);
+    public ResponseEntity<List<CommentResponseDTO>> getCommentsBySongId(@PathVariable Long id) {
+        return ResponseEntity.ok(commentService.getCommentsBySongId(id));
     }
 
     @GetMapping("/top")

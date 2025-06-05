@@ -1,6 +1,8 @@
-
 package com.music.application.be.modules.song_playlist;
 
+import com.music.application.be.modules.song_playlist.dto.SongPlaylistDTO;
+import com.music.application.be.modules.song_playlist.dto.SongPlaylistRequestDTO;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,16 +16,16 @@ public class SongPlaylistController {
 
     // Add song to playlist
     @PostMapping
-    public ResponseEntity<SongPlaylistDTO> addSongToPlaylist(@RequestBody SongPlaylistDTO songPlaylistDTO) {
-        return ResponseEntity.ok(songPlaylistService.addSongToPlaylist(songPlaylistDTO));
+    public ResponseEntity<SongPlaylistDTO> addSongToPlaylist(@Valid @RequestBody SongPlaylistRequestDTO requestDTO) {
+        return ResponseEntity.ok(songPlaylistService.addSongToPlaylist(requestDTO));
     }
 
-    // Update addedAt
+    // Update song or playlist in SongPlaylist
     @PutMapping("/{id}")
     public ResponseEntity<SongPlaylistDTO> updateSongPlaylist(
             @PathVariable Long id,
-            @RequestBody SongPlaylistDTO songPlaylistDTO) {
-        return ResponseEntity.ok(songPlaylistService.updateSongPlaylist(id, songPlaylistDTO));
+            @Valid @RequestBody SongPlaylistRequestDTO requestDTO) {
+        return ResponseEntity.ok(songPlaylistService.updateSongPlaylist(id, requestDTO));
     }
 
     // Remove song from playlist

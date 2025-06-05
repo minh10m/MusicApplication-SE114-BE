@@ -1,5 +1,8 @@
 package com.music.application.be.modules.favorite_song;
 
+import com.music.application.be.modules.favorite_song.dto.AddFavoriteSongRequestDTO;
+import com.music.application.be.modules.favorite_song.dto.FavoriteSongDTO;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -18,9 +21,8 @@ public class FavoriteSongController {
     // Add favorite song
     @PostMapping
     public ResponseEntity<FavoriteSongDTO> addFavoriteSong(
-            @RequestParam Long userId,
-            @RequestParam Long songId) {
-        return ResponseEntity.ok(favoriteSongService.addFavoriteSong(userId, songId));
+            @Valid @RequestBody AddFavoriteSongRequestDTO requestDTO) {
+        return ResponseEntity.ok(favoriteSongService.addFavoriteSong(requestDTO.getUserId(), requestDTO.getSongId()));
     }
 
     // Get favorite songs with sorting

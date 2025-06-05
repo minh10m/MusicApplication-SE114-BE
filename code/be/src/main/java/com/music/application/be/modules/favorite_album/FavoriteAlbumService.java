@@ -2,8 +2,10 @@ package com.music.application.be.modules.favorite_album;
 
 import com.music.application.be.modules.album.Album;
 import com.music.application.be.modules.album.AlbumRepository;
+import com.music.application.be.modules.favorite_album.dto.FavoriteAlbumDTO;
 import com.music.application.be.modules.user.User;
 import com.music.application.be.modules.user.UserRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -26,9 +28,9 @@ public class FavoriteAlbumService {
     // Add favorite album
     public FavoriteAlbumDTO addFavoriteAlbum(Long userId, Long albumId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + userId));
         Album album = albumRepository.findById(albumId)
-                .orElseThrow(() -> new RuntimeException("Album not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Album not found with id: " + albumId));
 
         FavoriteAlbum favoriteAlbum = FavoriteAlbum.builder()
                 .user(user)
@@ -54,7 +56,7 @@ public class FavoriteAlbumService {
     // Remove favorite album
     public void removeFavoriteAlbum(Long id) {
         FavoriteAlbum favoriteAlbum = favoriteAlbumRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Favorite album not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Favorite album not found with id: " + id));
         favoriteAlbumRepository.delete(favoriteAlbum);
     }
 

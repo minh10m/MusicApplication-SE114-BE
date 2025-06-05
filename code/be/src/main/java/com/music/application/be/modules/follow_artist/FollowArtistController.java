@@ -1,5 +1,8 @@
 package com.music.application.be.modules.follow_artist;
 
+import com.music.application.be.modules.follow_artist.dto.FollowArtistDTO;
+import com.music.application.be.modules.follow_artist.dto.FollowArtistRequestDTO;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -18,17 +21,15 @@ public class FollowArtistController {
     // Follow artist
     @PostMapping
     public ResponseEntity<FollowArtistDTO> followArtist(
-            @RequestParam Long userId,
-            @RequestParam Long artistId) {
-        return ResponseEntity.ok(followArtistService.followArtist(userId, artistId));
+            @Valid @RequestBody FollowArtistRequestDTO requestDTO) {
+        return ResponseEntity.ok(followArtistService.followArtist(requestDTO.getUserId(), requestDTO.getArtistId()));
     }
 
     // Unfollow artist
-    @DeleteMapping
+    @DeleteMapping("/{id}")
     public ResponseEntity<Void> unfollowArtist(
-            @RequestParam Long userId,
-            @RequestParam Long artistId) {
-        followArtistService.unfollowArtist(userId, artistId);
+            @PathVariable Long id) {
+        followArtistService.unfollowArtist(id);
         return ResponseEntity.ok().build();
     }
 

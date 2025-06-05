@@ -1,4 +1,4 @@
-package com.music.application.be.modules.favorite_album;
+package com.music.application.be.modules.favorite_playlist.dto;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -7,9 +7,9 @@ import java.time.LocalDateTime;
 
 @Getter
 @Setter
-public class FavoriteAlbumDTO {
+public class FavoritePlaylistDTO {
     private Long id;
     private Long userId;
-    private Long albumId;
+    private Long playlistId;
     private LocalDateTime addedAt;
 }

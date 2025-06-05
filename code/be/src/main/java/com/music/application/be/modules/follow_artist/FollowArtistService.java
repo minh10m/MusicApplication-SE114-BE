@@ -2,6 +2,8 @@ package com.music.application.be.modules.follow_artist;
 
 import com.music.application.be.modules.artist.Artist;
 import com.music.application.be.modules.artist.ArtistRepository;
+import com.music.application.be.modules.follow_artist.dto.FollowArtistDTO;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -21,7 +23,11 @@ public class FollowArtistService {
     // Follow artist
     public FollowArtistDTO followArtist(Long userId, Long artistId) {
         Artist artist = artistRepository.findById(artistId)
-                .orElseThrow(() -> new RuntimeException("Artist not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Artist not found with id: " + artistId));
+
+        if (followArtistRepository.findByUserIdAndArtistId(userId, artistId).isPresent()) {
+            throw new IllegalStateException("User with id " + userId + " has already followed artist with id " + artistId);
+        }
 
         FollowArtist followArtist = new FollowArtist();
         followArtist.setUserId(userId);
@@ -36,14 +42,14 @@ public class FollowArtistService {
     }
 
     // Unfollow artist
-    public void unfollowArtist(Long userId, Long artistId) {
-        FollowArtist followArtist = followArtistRepository.findByUserIdAndArtistId(userId, artistId)
-                .orElseThrow(() -> new RuntimeException("Follow relationship not found"));
-        Artist artist = artistRepository.findById(artistId)
-                .orElseThrow(() -> new RuntimeException("Artist not found"));
+    public void unfollowArtist(Long id) {
+        FollowArtist followArtist = followArtistRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Follow relationship not found with id: " + id));
+        Artist artist = followArtist.getArtist();
 
         followArtistRepository.delete(followArtist);
-        artist.setFollowerCount(artist.getFollowerCount() - 1);
+        int newFollowerCount = artist.getFollowerCount() - 1;
+        artist.setFollowerCount(Math.max(0, newFollowerCount)); // Đảm bảo followerCount không âm
         artistRepository.save(artist);
     }
 

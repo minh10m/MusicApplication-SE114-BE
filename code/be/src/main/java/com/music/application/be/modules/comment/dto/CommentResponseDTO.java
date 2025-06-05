@@ -1,4 +1,4 @@
-package com.music.application.be.modules.comment;
+package com.music.application.be.modules.comment.dto;
 
 import lombok.Data;
 
@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
-public class CommentDTO {
+public class CommentResponseDTO {
     private Long id;
     private Long songId;
     private Long userId;
@@ -14,5 +14,5 @@ public class CommentDTO {
     private Long parentId;
     private LocalDateTime createdAt;
     private Long likes;
-    private List<CommentDTO> replies;
+    private List<CommentResponseDTO> replies;
 }

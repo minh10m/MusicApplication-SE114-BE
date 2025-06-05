@@ -1,66 +1,66 @@
 package com.music.application.be.modules.artist;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+    import com.music.application.be.modules.artist.dto.ArtistResponseDTO;
+    import com.music.application.be.modules.artist.dto.CreateArtistDTO;
+    import com.music.application.be.modules.artist.dto.UpdateArtistDTO;
+    import org.springframework.beans.factory.annotation.Autowired;
+    import org.springframework.data.domain.Page;
+    import org.springframework.data.domain.PageRequest;
+    import org.springframework.data.domain.Pageable;
+    import org.springframework.http.ResponseEntity;
+    import org.springframework.web.bind.annotation.*;
 
-@RestController
-@RequestMapping("/api/artists")
-public class ArtistController {
+    import jakarta.validation.Valid;
 
-    @Autowired
-    private ArtistService artistService;
+    @RestController
+    @RequestMapping("/api/artists")
+    public class ArtistController {
 
-    // Create artist
-    @PostMapping
-    public ResponseEntity<ArtistDTO> createArtist(@RequestBody ArtistDTO artistDTO) {
-        return ResponseEntity.ok(artistService.createArtist(artistDTO));
+        @Autowired
+        private ArtistService artistService;
+
+        @PostMapping
+        public ResponseEntity<ArtistResponseDTO> createArtist(@Valid @RequestBody CreateArtistDTO createArtistDTO) {
+            return ResponseEntity.ok(artistService.createArtist(createArtistDTO));
+        }
+
+        @GetMapping("/{id}")
+        public ResponseEntity<ArtistResponseDTO> getArtistById(@PathVariable Long id) {
+            return ResponseEntity.ok(artistService.getArtistById(id));
+        }
+
+        @GetMapping
+        public ResponseEntity<Page<ArtistResponseDTO>> getAllArtists(
+                @RequestParam(defaultValue = "0") int page,
+                @RequestParam(defaultValue = "20") int size) {
+            Pageable pageable = PageRequest.of(page, size);
+            return ResponseEntity.ok(artistService.getAllArtists(pageable));
+        }
+
+        @PutMapping("/{id}")
+        public ResponseEntity<ArtistResponseDTO> updateArtist(
+                @PathVariable Long id,
+                @Valid @RequestBody UpdateArtistDTO updateArtistDTO) {
+            return ResponseEntity.ok(artistService.updateArtist(id, updateArtistDTO));
+        }
+
+        @DeleteMapping("/{id}")
+        public ResponseEntity<Void> deleteArtist(@PathVariable Long id) {
+            artistService.deleteArtist(id);
+            return ResponseEntity.ok().build();
+        }
+
+        @GetMapping("/search")
+        public ResponseEntity<Page<ArtistResponseDTO>> searchArtists(
+                @RequestParam String query,
+                @RequestParam(defaultValue = "0") int page,
+                @RequestParam(defaultValue = "20") int size) {
+            Pageable pageable = PageRequest.of(page, size);
+            return ResponseEntity.ok(artistService.searchArtists(query, pageable));
+        }
+
+        @GetMapping("/{id}/share")
+        public ResponseEntity<String> shareArtist(@PathVariable Long id) {
+            return ResponseEntity.ok(artistService.shareArtist(id));
+        }
     }
-
-    // Get artist by ID
-    @GetMapping("/{id}")
-    public ResponseEntity<ArtistDTO> getArtistById(@PathVariable Long id) {
-        return ResponseEntity.ok(artistService.getArtistById(id));
-    }
-
-    // Get all artists
-    @GetMapping
-    public ResponseEntity<Page<ArtistDTO>> getAllArtists(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
-        Pageable pageable = PageRequest.of(page, size);
-        return ResponseEntity.ok(artistService.getAllArtists(pageable));
-    }
-
-    // Update artist
-    @PutMapping("/{id}")
-    public ResponseEntity<ArtistDTO> updateArtist(@PathVariable Long id, @RequestBody ArtistDTO artistDTO) {
-        return ResponseEntity.ok(artistService.updateArtist(id, artistDTO));
-    }
-
-    // Delete artist
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteArtist(@PathVariable Long id) {
-        artistService.deleteArtist(id);
-        return ResponseEntity.ok().build();
-    }
-
-    // Search artists
-    @GetMapping("/search")
-    public ResponseEntity<Page<ArtistDTO>> searchArtists(
-            @RequestParam String query,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
-        Pageable pageable = PageRequest.of(page, size);
-        return ResponseEntity.ok(artistService.searchArtists(query, pageable));
-    }
-
-    // Share artist
-    @GetMapping("/{id}/share")
-    public ResponseEntity<String> shareArtist(@PathVariable Long id) {
-        return ResponseEntity.ok(artistService.shareArtist(id));
-    }
-}

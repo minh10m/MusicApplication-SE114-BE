@@ -1,4 +1,4 @@
-package com.music.application.be.modules.song.DTO;
+package com.music.application.be.modules.song.dto;
 
 import jakarta.validation.constraints.Size;
 import lombok.Data;

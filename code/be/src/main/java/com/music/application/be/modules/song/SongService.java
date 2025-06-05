@@ -9,9 +9,9 @@ import com.music.application.be.modules.genre.Genre;
 import com.music.application.be.modules.genre.GenreRepository;
 import com.music.application.be.modules.playlist.Playlist;
 import com.music.application.be.modules.playlist.PlaylistRepository;
-import com.music.application.be.modules.song.DTO.CreateSongDTO;
-import com.music.application.be.modules.song.DTO.SongDTO;
-import com.music.application.be.modules.song.DTO.UpdateSongDTO;
+import com.music.application.be.modules.song.dto.CreateSongDTO;
+import com.music.application.be.modules.song.dto.SongDTO;
+import com.music.application.be.modules.song.dto.UpdateSongDTO;
 import com.music.application.be.modules.song_playlist.SongPlaylist;
 import com.music.application.be.modules.song_playlist.SongPlaylistRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -226,13 +226,7 @@ public class SongService {
     public String shareSong(Long id) {
         Song song = songRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Song not found with id: " + id));
-        return "https://musicapp.com/song/" + id;
-    }
-
-    public String getSongThumbnail(Long id) {
-        Song song = songRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Song not found with id: " + id));
-        return song.getThumbnail();
+        return "http://localhost:8080/api/songs/" + id;
     }
 
     private SongDTO mapToDTO(Song song) {
