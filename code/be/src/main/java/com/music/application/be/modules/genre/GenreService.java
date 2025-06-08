@@ -1,5 +1,8 @@
 package com.music.application.be.modules.genre;
 
+import com.music.application.be.modules.genre.dto.GenreDTO;
+import com.music.application.be.modules.genre.dto.GenreRequestDTO;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
@@ -15,11 +18,11 @@ public class GenreService {
     private GenreRepository genreRepository;
 
     // Create
-    @CachePut(value = "genres", key = "#result.id")
-    public GenreDTO createGenre(GenreDTO genreDTO) {
+    @CacheEvict(value = {"genres", "searchedGenres"}, allEntries = true)
+    public GenreDTO createGenre(GenreRequestDTO genreRequestDTO) {
         Genre genre = new Genre();
-        genre.setName(genreDTO.getName());
-        genre.setDescription(genreDTO.getDescription());
+        genre.setName(genreRequestDTO.getName());
+        genre.setDescription(genreRequestDTO.getDescription());
 
         Genre savedGenre = genreRepository.save(genre);
         return mapToDTO(savedGenre);
@@ -29,39 +32,40 @@ public class GenreService {
     @Cacheable(value = "genres", key = "#id")
     public GenreDTO getGenreById(Long id) {
         Genre genre = genreRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Genre not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Genre not found with id: " + id));
         return mapToDTO(genre);
     }
 
     // Read all with pagination
-    @Cacheable(value = "genresPage", key = "#pageable.pageNumber + '-' + #pageable.pageSize")
+    @Cacheable(value = "genres", key = "'all-' + #pageable.pageNumber + '-' + #pageable.pageSize")
     public Page<GenreDTO> getAllGenres(Pageable pageable) {
         return genreRepository.findAll(pageable).map(this::mapToDTO);
     }
 
     // Update
     @CachePut(value = "genres", key = "#id")
-    public GenreDTO updateGenre(Long id, GenreDTO genreDTO) {
+    @CacheEvict(value = "searchedGenres", allEntries = true)
+    public GenreDTO updateGenre(Long id, GenreRequestDTO genreRequestDTO) {
         Genre genre = genreRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Genre not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Genre not found with id: " + id));
 
-        genre.setName(genreDTO.getName());
-        genre.setDescription(genreDTO.getDescription());
+        genre.setName(genreRequestDTO.getName());
+        genre.setDescription(genreRequestDTO.getDescription());
 
         Genre updatedGenre = genreRepository.save(genre);
         return mapToDTO(updatedGenre);
     }
 
     // Delete
-    @CacheEvict(value = "genres", key = "#id")
+    @CacheEvict(value = {"genres", "searchedGenres"}, allEntries = true)
     public void deleteGenre(Long id) {
         Genre genre = genreRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Genre not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Genre not found with id: " + id));
         genreRepository.delete(genre);
     }
 
     // Search genres
-    @Cacheable(value = "genresSearch", key = "#query + '-' + #pageable.pageNumber + '-' + #pageable.pageSize")
+    @Cacheable(value = "searchedGenres", key = "#query + '-' + #pageable.pageNumber + '-' + #pageable.pageSize")
     public Page<GenreDTO> searchGenres(String query, Pageable pageable) {
         return genreRepository.findByNameContainingIgnoreCase(query, pageable).map(this::mapToDTO);
     }

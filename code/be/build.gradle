@@ -20,58 +20,56 @@ repositories {
 }
 
 dependencies {
+	// Spring Boot Starters
 	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
+	implementation 'org.springframework.boot:spring-boot-starter-cache'
+	implementation 'org.springframework.boot:spring-boot-starter-mail:3.5.0'
 
-	runtimeOnly 'org.postgresql:postgresql'
-	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	// Jackson
+	implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+	implementation 'com.fasterxml.jackson.module:jackson-module-parameter-names'
 
+	// Jakarta & Hibernate
+	implementation 'jakarta.persistence:jakarta.persistence-api:3.1.0'
+	implementation 'jakarta.validation:jakarta.validation-api:3.0.2'
+	implementation 'org.hibernate:hibernate-core:6.4.4.Final'
+	implementation 'org.hibernate.validator:hibernate-validator'
+
+	// JWT
+	implementation 'io.jsonwebtoken:jjwt-api:0.12.6'
+	implementation 'io.jsonwebtoken:jjwt-impl:0.12.6'
+	implementation 'io.jsonwebtoken:jjwt-jackson:0.12.6'
+
+	// Cloudinary
+	implementation 'com.cloudinary:cloudinary-http5:2.0.0'
+	implementation 'com.cloudinary:cloudinary-taglib:2.0.0'
+
+	// Swagger (OpenAPI)
+	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0'
+
+	// Redis connection pooling
+	implementation 'org.apache.commons:commons-pool2'
+
+	// Environment variables
+	implementation 'io.github.cdimascio:dotenv-java:3.0.0'
+
+	// Audio file processing
+	implementation 'net.jthink:jaudiotagger:3.0.1'
+
+	// Lombok
 	compileOnly 'org.projectlombok:lombok:1.18.30'
 	annotationProcessor 'org.projectlombok:lombok:1.18.30'
 
-	implementation 'jakarta.persistence:jakarta.persistence-api:3.1.0'
+	// Database driver
+	runtimeOnly 'org.postgresql:postgresql'
 
-	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-
-	implementation 'org.hibernate:hibernate-core:6.4.4.Final' // Use version matching your Spring Boot
-	implementation 'org.hibernate.validator:hibernate-validator'
-
-	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
-
-	implementation("io.jsonwebtoken:jjwt-api:0.12.6")
-	implementation "io.jsonwebtoken:jjwt-impl:0.12.6"
-	implementation "io.jsonwebtoken:jjwt-jackson:0.12.6"
-
-	implementation 'org.springframework.boot:spring-boot-starter-security'
-
-	// Jakarta Validation (JSR-380, kế thừa từ javax.validation)
-	implementation 'jakarta.validation:jakarta.validation-api:3.0.2'
-
-	// Nếu bạn dùng Spring Boot, thường nên thêm cái này nữa để có cả bộ hỗ trợ
-	implementation 'org.springframework.boot:spring-boot-starter-validation'
-
+	// Testing
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-
-	//Swagger
-	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0'
-
-	implementation("org.springframework.boot:spring-boot-starter-data-redis")
-	implementation("org.apache.commons:commons-pool2")
-	implementation("org.springframework.boot:spring-boot-starter-cache")
-	implementation("com.fasterxml.jackson.module:jackson-module-parameter-names")
-	implementation("io.github.cdimascio:dotenv-java:3.0.0")
-
-    // Cloudinary dependencies
-    implementation 'com.cloudinary:cloudinary-http5:2.0.0'
-    implementation 'com.cloudinary:cloudinary-taglib:2.0.0'
-    // Dotenv-java dependency
-    implementation 'io.github.cdimascio:dotenv-java:2.2.4'
-    // For handle music file
-    implementation("net.jthink:jaudiotagger:3.0.1")
-
-    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
-
-	implementation("org.springframework.boot:spring-boot-starter-mail:3.5.0")
-
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 tasks.named('test') {
