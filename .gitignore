@@ -1,3 +1,2 @@
-/logs/
-/code/be/src/main/resources/application.properties
+code/be/src/main/resources/application.properties
 *.log

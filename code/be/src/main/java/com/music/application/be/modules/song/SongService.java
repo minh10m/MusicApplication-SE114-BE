@@ -16,6 +16,9 @@ import com.music.application.be.modules.song_playlist.SongPlaylist;
 import com.music.application.be.modules.song_playlist.SongPlaylistRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -53,6 +56,8 @@ public class SongService {
     @Autowired
     private CloudinaryService cloudinaryService;
 
+    // Create
+    @CacheEvict(value = {"songs", "searchedSongs", "songsByGenre", "songsByArtist", "topSongs"}, allEntries = true)
     public SongDTO createSong(CreateSongDTO createSongDTO, MultipartFile audioFile, MultipartFile thumbnailFile) throws IOException {
         if (audioFile == null || audioFile.isEmpty()) {
             throw new IllegalArgumentException("Audio file is required");
@@ -81,7 +86,7 @@ public class SongService {
             deleteTempFile(audioTempFile);
         }
 
-        // Upload file thumbnail lên Cloudinary (không cần trích xuất duration)
+        // Upload file thumbnail lên Cloudinary
         String thumbnailUrl = cloudinaryService.uploadFile(thumbnailFile, "image");
         song.setThumbnail(thumbnailUrl);
 
@@ -123,6 +128,9 @@ public class SongService {
         return mapToDTO(savedSong);
     }
 
+    // Update
+    @CachePut(value = "songs", key = "#id")
+    @CacheEvict(value = {"searchedSongs", "songsByGenre", "songsByArtist", "topSongs"}, allEntries = true)
     public SongDTO updateSong(Long id, UpdateSongDTO updateSongDTO, MultipartFile audioFile, MultipartFile thumbnailFile) throws IOException {
         Song song = songRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Song not found with id: " + id));
@@ -188,6 +196,8 @@ public class SongService {
         return mapToDTO(updatedSong);
     }
 
+    // Read by ID
+    @Cacheable(value = "songs", key = "#id")
     public SongDTO getSongById(Long id) {
         Song song = songRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Song not found with id: " + id));
@@ -196,33 +206,47 @@ public class SongService {
         return mapToDTO(song);
     }
 
+    // Read all with pagination
+    @Cacheable(value = "songs", key = "'all-' + #pageable.pageNumber + '-' + #pageable.pageSize")
     public Page<SongDTO> getAllSongs(Pageable pageable) {
         return songRepository.findAll(pageable).map(this::mapToDTO);
     }
 
+    // Delete
+    @CacheEvict(value = {"songs", "searchedSongs", "songsByGenre", "songsByArtist", "topSongs"}, allEntries = true)
     public void deleteSong(Long id) {
         Song song = songRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Song not found with id: " + id));
         songRepository.delete(song);
     }
 
+    // Search songs
+    @Cacheable(value = "searchedSongs", key = "#query + '-' + #pageable.pageNumber + '-' + #pageable.pageSize")
     public Page<SongDTO> searchSongs(String query, Pageable pageable) {
         return songRepository.findByTitleContainingIgnoreCase(query, pageable).map(this::mapToDTO);
     }
 
+    // Get songs by genre
+    @Cacheable(value = "songsByGenre", key = "#genreId + '-' + #pageable.pageNumber + '-' + #pageable.pageSize")
     public Page<SongDTO> getSongsByGenre(Long genreId, Pageable pageable) {
         return songRepository.findByGenresId(genreId, pageable).map(this::mapToDTO);
     }
 
+    // Get songs by artist
+    @Cacheable(value = "songsByArtist", key = "#artistId + '-' + #pageable.pageNumber + '-' + #pageable.pageSize")
     public Page<SongDTO> getSongsByArtist(Long artistId, Pageable pageable) {
         return songRepository.findByArtistId(artistId, pageable).map(this::mapToDTO);
     }
 
+    // Get top songs by view count
+    @Cacheable(value = "topSongs", key = "'top-' + #page + '-' + #size")
     public Page<SongDTO> getTopSongsByViewCount(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         return songRepository.findAllByOrderByViewCountDesc(pageable).map(this::mapToDTO);
     }
 
+    // Share song
+    @Cacheable(value = "songs", key = "'share-' + #id")
     public String shareSong(Long id) {
         Song song = songRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Song not found with id: " + id));

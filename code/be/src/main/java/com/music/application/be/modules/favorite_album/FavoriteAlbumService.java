@@ -7,6 +7,9 @@ import com.music.application.be.modules.user.User;
 import com.music.application.be.modules.user.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -26,6 +29,7 @@ public class FavoriteAlbumService {
     private AlbumRepository albumRepository;
 
     // Add favorite album
+    @CachePut(value = "favoriteAlbums", key = "#userId")
     public FavoriteAlbumDTO addFavoriteAlbum(Long userId, Long albumId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + userId));
@@ -43,17 +47,20 @@ public class FavoriteAlbumService {
     }
 
     // Get favorite albums
+    @Cacheable(value = "favoriteAlbums", key = "#userId + '-' + #pageable.pageNumber + '-' + #pageable.pageSize")
     public Page<FavoriteAlbumDTO> getFavoriteAlbums(Long userId, Pageable pageable) {
         return favoriteAlbumRepository.findByUserId(userId, pageable).map(this::mapToDTO);
     }
 
     // Search favorite albums
+    @Cacheable(value = "favoriteAlbumsSearch", key = "#userId + '-' + #query + '-' + #pageable.pageNumber + '-' + #pageable.pageSize")
     public Page<FavoriteAlbumDTO> searchFavoriteAlbums(Long userId, String query, Pageable pageable) {
         return favoriteAlbumRepository.findByUserIdAndAlbumNameContainingIgnoreCase(userId, query, pageable)
                 .map(this::mapToDTO);
     }
 
     // Remove favorite album
+    @CacheEvict(value = "favoriteAlbums", key = "#favoriteAlbum.user.id")
     public void removeFavoriteAlbum(Long id) {
         FavoriteAlbum favoriteAlbum = favoriteAlbumRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Favorite album not found with id: " + id));

@@ -10,6 +10,9 @@ import com.music.application.be.modules.song_playlist.SongPlaylist;
 import com.music.application.be.modules.song_playlist.SongPlaylistRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -34,6 +37,7 @@ public class PlaylistService {
     private SongPlaylistRepository songPlaylistRepository;
 
     // Create
+    @CacheEvict(value = {"playlists", "searchedPlaylists"}, allEntries = true)
     public PlaylistDTO createPlaylist(PlaylistRequestDTO playlistRequestDTO) {
         Playlist playlist = new Playlist();
         playlist.setName(playlistRequestDTO.getName());
@@ -67,6 +71,7 @@ public class PlaylistService {
     }
 
     // Read by ID
+    @Cacheable(value = "playlists", key = "#id")
     public PlaylistDTO getPlaylistById(Long id) {
         Playlist playlist = playlistRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Playlist not found with id: " + id));
@@ -74,11 +79,14 @@ public class PlaylistService {
     }
 
     // Read all with pagination
+    @Cacheable(value = "playlists", key = "'all-' + #pageable.pageNumber + '-' + #pageable.pageSize")
     public Page<PlaylistDTO> getAllPlaylists(Pageable pageable) {
         return playlistRepository.findAll(pageable).map(this::mapToDTO);
     }
 
     // Update
+    @CachePut(value = "playlists", key = "#id")
+    @CacheEvict(value = "searchedPlaylists", allEntries = true)
     public PlaylistDTO updatePlaylist(Long id, PlaylistRequestDTO playlistRequestDTO) {
         Playlist playlist = playlistRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Playlist not found with id: " + id));
@@ -118,6 +126,7 @@ public class PlaylistService {
     }
 
     // Delete
+    @CacheEvict(value = {"playlists", "searchedPlaylists"}, allEntries = true)
     public void deletePlaylist(Long id) {
         Playlist playlist = playlistRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Playlist not found with id: " + id));
@@ -126,11 +135,13 @@ public class PlaylistService {
     }
 
     // Search playlists
+    @Cacheable(value = "searchedPlaylists", key = "#query + '-' + #pageable.pageNumber + '-' + #pageable.pageSize")
     public Page<PlaylistDTO> searchPlaylists(String query, Pageable pageable) {
         return playlistRepository.findByNameContainingIgnoreCase(query, pageable).map(this::mapToDTO);
     }
 
     // Share playlist
+    @Cacheable(value = "playlists", key = "'share-' + #id")
     public String sharePlaylist(Long id) {
         Playlist playlist = playlistRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Playlist not found with id: " + id));

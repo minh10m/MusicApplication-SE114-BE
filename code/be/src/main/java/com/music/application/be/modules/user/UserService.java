@@ -5,6 +5,9 @@ import com.music.application.be.modules.user.dto.UserDTO;
 import jakarta.persistence.EntityNotFoundException;
 import com.music.application.be.modules.user.dto.UserResponseDTO;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,11 +25,14 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final CloudinaryService cloudinaryService;
 
+    @Cacheable(value = "users", key = "#userId")
     public User getUserById(Long userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + userId));
     }
 
+    @CachePut(value = "users", key = "#userId")
+    @CacheEvict(value = {"allUsers", "followedArtists", "searchedFollowedArtists"}, allEntries = true)
     public User updateUser(Long userId, UserDTO userDTO, MultipartFile avatarFile) throws IOException {
         User user = getUserById(userId);
 
@@ -51,6 +57,7 @@ public class UserService {
         return userRepository.save(user);
     }
 
+    @Cacheable(value = "allUsers")
     public List<UserResponseDTO> getAllUsers() {
         return userRepository.findAll()
                 .stream()
@@ -65,6 +72,7 @@ public class UserService {
                 .toList();
     }
 
+    @CacheEvict(value = {"users", "allUsers", "followedArtists", "searchedFollowedArtists"}, allEntries = true)
     public void deleteUser(Long userId) {
         User user = getUserById(userId);
         userRepository.delete(user);

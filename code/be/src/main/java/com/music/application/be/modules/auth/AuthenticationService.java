@@ -1,5 +1,7 @@
 package com.music.application.be.modules.auth;
 
+import com.music.application.be.modules.auth.dto.LoginRequest;
+import com.music.application.be.modules.auth.dto.RegisterRequest;
 import com.music.application.be.modules.cloudinary.CloudinaryService;
 import com.music.application.be.modules.token.JwtService;
 import com.music.application.be.modules.token.Token;

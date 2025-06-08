@@ -1,5 +1,7 @@
 package com.music.application.be.modules.auth;
 
+import com.music.application.be.modules.auth.dto.LoginRequest;
+import com.music.application.be.modules.auth.dto.RegisterRequest;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.ResponseEntity;

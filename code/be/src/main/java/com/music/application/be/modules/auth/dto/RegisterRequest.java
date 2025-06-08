@@ -1,4 +1,4 @@
-package com.music.application.be.modules.auth;
+package com.music.application.be.modules.auth.dto;
 
 import com.music.application.be.modules.role.Role;
 import lombok.AllArgsConstructor;

@@ -5,6 +5,8 @@ import com.music.application.be.modules.artist.ArtistRepository;
 import com.music.application.be.modules.follow_artist.dto.FollowArtistDTO;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -21,6 +23,7 @@ public class FollowArtistService {
     private ArtistRepository artistRepository;
 
     // Follow artist
+    @CacheEvict(value = {"followedArtists", "searchedFollowedArtists"}, key = "#userId")
     public FollowArtistDTO followArtist(Long userId, Long artistId) {
         Artist artist = artistRepository.findById(artistId)
                 .orElseThrow(() -> new EntityNotFoundException("Artist not found with id: " + artistId));
@@ -42,6 +45,7 @@ public class FollowArtistService {
     }
 
     // Unfollow artist
+    @CacheEvict(value = {"followedArtists", "searchedFollowedArtists"}, key = "#followArtist.userId")
     public void unfollowArtist(Long id) {
         FollowArtist followArtist = followArtistRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Follow relationship not found with id: " + id));
@@ -49,16 +53,18 @@ public class FollowArtistService {
 
         followArtistRepository.delete(followArtist);
         int newFollowerCount = artist.getFollowerCount() - 1;
-        artist.setFollowerCount(Math.max(0, newFollowerCount)); // Đảm bảo followerCount không âm
+        artist.setFollowerCount(Math.max(0, newFollowerCount));
         artistRepository.save(artist);
     }
 
     // Get followed artists
+    @Cacheable(value = "followedArtists", key = "#userId + '-' + #pageable.pageNumber + '-' + #pageable.pageSize")
     public Page<FollowArtistDTO> getFollowedArtists(Long userId, Pageable pageable) {
         return followArtistRepository.findByUserId(userId, pageable).map(this::mapToDTO);
     }
 
     // Search followed artists
+    @Cacheable(value = "searchedFollowedArtists", key = "#userId + '-' + #query + '-' + #pageable.pageNumber + '-' + #pageable.pageSize")
     public Page<FollowArtistDTO> searchFollowedArtists(Long userId, String query, Pageable pageable) {
         return followArtistRepository.findByUserIdAndArtistNameContainingIgnoreCase(userId, query, pageable)
                 .map(this::mapToDTO);

@@ -7,6 +7,9 @@ import com.music.application.be.modules.user.User;
 import com.music.application.be.modules.user.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -26,6 +29,7 @@ public class FavoritePlaylistService {
     private PlaylistRepository playlistRepository;
 
     // Add favorite playlist
+    @CachePut(value = "favoritePlaylists", key = "#userId + '-' + #playlistId")
     public FavoritePlaylistDTO addFavoritePlaylist(Long userId, Long playlistId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + userId));
@@ -43,17 +47,20 @@ public class FavoritePlaylistService {
     }
 
     // Get favorite playlists
+    @Cacheable(value = "favoritePlaylists", key = "#userId + '-' + #pageable.pageNumber")
     public Page<FavoritePlaylistDTO> getFavoritePlaylists(Long userId, Pageable pageable) {
         return favoritePlaylistRepository.findByUserId(userId, pageable).map(this::mapToDTO);
     }
 
     // Search favorite playlists
+    @Cacheable(value = "favoritePlaylists", key = "#userId + '-' + #query + '-' + #pageable.pageNumber")
     public Page<FavoritePlaylistDTO> searchFavoritePlaylists(Long userId, String query, Pageable pageable) {
         return favoritePlaylistRepository.findByUserIdAndPlaylistNameContainingIgnoreCase(userId, query, pageable)
                 .map(this::mapToDTO);
     }
 
     // Remove favorite playlist
+    @CacheEvict(value = "favoritePlaylists", allEntries = true)
     public void removeFavoritePlaylist(Long id) {
         FavoritePlaylist favoritePlaylist = favoritePlaylistRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Favorite playlist not found with id: " + id));

@@ -41,21 +41,22 @@ public class SecurityConfig {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(
-                        req -> req
-                                .requestMatchers(
+                        req->req.requestMatchers(
                                         "/login/**",
                                         "/register/**",
                                         "/refresh_token/**",
+                                        "forget-password/**",
                                         "/v3/api-docs/**",
                                         "/v3/api-docs/swagger-config",
                                         "/swagger-ui/**",
                                         "/swagger-ui.html",
                                         "/swagger-resources/**",
                                         "/configuration/**",
-                                        "/webjars/**"
-                                ).permitAll()
+                                        "/webjars/**")
+                                .permitAll()
                                 .requestMatchers("/admin/**").hasAuthority("ADMIN")
-                                .anyRequest().authenticated()
+                                .anyRequest()
+                                .authenticated()
                 ).userDetailsService(userDetailsServiceImp)
                 .sessionManagement(session->session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))

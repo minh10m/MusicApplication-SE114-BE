@@ -1,6 +1,5 @@
 package com.music.application.be.modules.token;
 
-
 import com.music.application.be.modules.user.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -8,6 +7,9 @@ import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import javax.crypto.SecretKey;
@@ -29,11 +31,12 @@ public class JwtService {
     @Autowired
     private TokenRepository tokenRepository;
 
+    @Cacheable(value = "jwtUsername", key = "#token")
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
     }
 
-
+    @Cacheable(value = "jwtValid", key = "#token")
     public boolean isValid(String token, UserDetails user) {
         String username = extractUsername(token);
 
@@ -45,6 +48,7 @@ public class JwtService {
         return (username.equals(user.getUsername())) && !isTokenExpired(token) && validToken;
     }
 
+    @Cacheable(value = "jwtValidRefresh", key = "#token")
     public boolean isValidRefreshToken(String token, User user) {
         String username = extractUsername(token);
 
@@ -64,6 +68,7 @@ public class JwtService {
         return extractClaim(token, Claims::getExpiration);
     }
 
+    @Cacheable(value = "jwtClaims", key = "#token")
     public <T> T extractClaim(String token, Function<Claims, T> resolver) {
         Claims claims = extractAllClaims(token);
         return resolver.apply(claims);
@@ -78,13 +83,19 @@ public class JwtService {
                 .getPayload();
     }
 
-
+    @CachePut(value = "jwtAccessTokens", key = "#user.username")
     public String generateAccessToken(User user) {
         return generateToken(user, accessTokenExpire);
     }
 
+    @CachePut(value = "jwtRefreshTokens", key = "#user.username")
     public String generateRefreshToken(User user) {
-        return generateToken(user, refreshTokenExpire );
+        return generateToken(user, refreshTokenExpire);
+    }
+
+    @CacheEvict(value = {"jwtAccessTokens", "jwtRefreshTokens", "jwtUsername", "jwtValid", "jwtValidRefresh", "jwtClaims"}, key = "#user.username")
+    public void invalidateTokens(User user) {
+        // Method to invalidate all cached tokens for a user
     }
 
     private String generateToken(User user, long expireTime) {
@@ -109,7 +120,6 @@ public class JwtService {
 
         return token;
     }
-
 
     private SecretKey getSigninKey() {
         byte[] keyBytes = Decoders.BASE64URL.decode(secretKey);
