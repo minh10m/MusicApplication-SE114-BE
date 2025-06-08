@@ -17,4 +17,5 @@ public interface SongRepository extends JpaRepository<Song, Long> {
 
     @Query("SELECT s FROM Song s JOIN s.genres g WHERE g IN :genres")
     List<Song> findByGenresIn(List<Genre> genres);
+    Page<Song> findAllByOrderByViewCountDesc(Pageable pageable);
 }

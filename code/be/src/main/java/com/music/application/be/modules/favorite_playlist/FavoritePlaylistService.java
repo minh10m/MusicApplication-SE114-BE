@@ -1,12 +1,12 @@
 package com.music.application.be.modules.favorite_playlist;
 
+import com.music.application.be.modules.favorite_playlist.dto.FavoritePlaylistDTO;
 import com.music.application.be.modules.playlist.Playlist;
 import com.music.application.be.modules.playlist.PlaylistRepository;
 import com.music.application.be.modules.user.User;
 import com.music.application.be.modules.user.UserRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -26,12 +26,11 @@ public class FavoritePlaylistService {
     private PlaylistRepository playlistRepository;
 
     // Add favorite playlist
-    @CacheEvict(value = {"favoritePlaylists", "favoritePlaylistsSearch"}, key = "#userId")
     public FavoritePlaylistDTO addFavoritePlaylist(Long userId, Long playlistId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + userId));
         Playlist playlist = playlistRepository.findById(playlistId)
-                .orElseThrow(() -> new RuntimeException("Playlist not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Playlist not found with id: " + playlistId));
 
         FavoritePlaylist favoritePlaylist = FavoritePlaylist.builder()
                 .user(user)
@@ -44,23 +43,20 @@ public class FavoritePlaylistService {
     }
 
     // Get favorite playlists
-    @Cacheable(value = "favoritePlaylists", key = "#userId + '-' + #pageable.pageNumber + '-' + #pageable.pageSize")
     public Page<FavoritePlaylistDTO> getFavoritePlaylists(Long userId, Pageable pageable) {
         return favoritePlaylistRepository.findByUserId(userId, pageable).map(this::mapToDTO);
     }
 
     // Search favorite playlists
-    @Cacheable(value = "favoritePlaylistsSearch", key = "#userId + '-' + #query + '-' + #pageable.pageNumber + '-' + #pageable.pageSize")
     public Page<FavoritePlaylistDTO> searchFavoritePlaylists(Long userId, String query, Pageable pageable) {
         return favoritePlaylistRepository.findByUserIdAndPlaylistNameContainingIgnoreCase(userId, query, pageable)
                 .map(this::mapToDTO);
     }
 
     // Remove favorite playlist
-    @CacheEvict(value = {"favoritePlaylists", "favoritePlaylistsSearch"}, key = "#favoritePlaylist.user.id")
     public void removeFavoritePlaylist(Long id) {
         FavoritePlaylist favoritePlaylist = favoritePlaylistRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Favorite playlist not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Favorite playlist not found with id: " + id));
         favoritePlaylistRepository.delete(favoritePlaylist);
     }
 

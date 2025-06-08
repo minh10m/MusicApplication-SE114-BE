@@ -1,4 +1,4 @@
-package com.music.application.be.modules.song_playlist;
+package com.music.application.be.modules.song_playlist.dto;
 
 import lombok.Data;
 

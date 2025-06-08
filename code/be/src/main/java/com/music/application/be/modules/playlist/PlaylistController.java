@@ -1,6 +1,8 @@
-
 package com.music.application.be.modules.playlist;
 
+import com.music.application.be.modules.playlist.dto.PlaylistDTO;
+import com.music.application.be.modules.playlist.dto.PlaylistRequestDTO;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -18,8 +20,8 @@ public class PlaylistController {
 
     // Create playlist
     @PostMapping
-    public ResponseEntity<PlaylistDTO> createPlaylist(@RequestBody PlaylistDTO playlistDTO) {
-        return ResponseEntity.ok(playlistService.createPlaylist(playlistDTO));
+    public ResponseEntity<PlaylistDTO> createPlaylist(@Valid @RequestBody PlaylistRequestDTO playlistRequestDTO) {
+        return ResponseEntity.ok(playlistService.createPlaylist(playlistRequestDTO));
     }
 
     // Get playlist by ID
@@ -42,8 +44,8 @@ public class PlaylistController {
 
     // Update playlist
     @PutMapping("/{id}")
-    public ResponseEntity<PlaylistDTO> updatePlaylist(@PathVariable Long id, @RequestBody PlaylistDTO playlistDTO) {
-        return ResponseEntity.ok(playlistService.updatePlaylist(id, playlistDTO));
+    public ResponseEntity<PlaylistDTO> updatePlaylist(@PathVariable Long id, @Valid @RequestBody PlaylistRequestDTO playlistRequestDTO) {
+        return ResponseEntity.ok(playlistService.updatePlaylist(id, playlistRequestDTO));
     }
 
     // Delete playlist

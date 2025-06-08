@@ -1,5 +1,8 @@
 package com.music.application.be.modules.favorite_playlist;
 
+import com.music.application.be.modules.favorite_playlist.dto.AddFavoritePlaylistRequestDTO;
+import com.music.application.be.modules.favorite_playlist.dto.FavoritePlaylistDTO;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -18,9 +21,8 @@ public class FavoritePlaylistController {
     // Add favorite playlist
     @PostMapping
     public ResponseEntity<FavoritePlaylistDTO> addFavoritePlaylist(
-            @RequestParam Long userId,
-            @RequestParam Long playlistId) {
-        return ResponseEntity.ok(favoritePlaylistService.addFavoritePlaylist(userId, playlistId));
+            @Valid @RequestBody AddFavoritePlaylistRequestDTO requestDTO) {
+        return ResponseEntity.ok(favoritePlaylistService.addFavoritePlaylist(requestDTO.getUserId(), requestDTO.getPlaylistId()));
     }
 
     // Get favorite playlists

@@ -1,5 +1,8 @@
 package com.music.application.be.modules.genre;
 
+import com.music.application.be.modules.genre.dto.GenreDTO;
+import com.music.application.be.modules.genre.dto.GenreRequestDTO;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -16,8 +19,8 @@ public class GenreController {
 
     // Create genre
     @PostMapping
-    public ResponseEntity<GenreDTO> createGenre(@RequestBody GenreDTO genreDTO) {
-        return ResponseEntity.ok(genreService.createGenre(genreDTO));
+    public ResponseEntity<GenreDTO> createGenre(@Valid @RequestBody GenreRequestDTO genreRequestDTO) {
+        return ResponseEntity.ok(genreService.createGenre(genreRequestDTO));
     }
 
     // Get genre by ID
@@ -37,8 +40,8 @@ public class GenreController {
 
     // Update genre
     @PutMapping("/{id}")
-    public ResponseEntity<GenreDTO> updateGenre(@PathVariable Long id, @RequestBody GenreDTO genreDTO) {
-        return ResponseEntity.ok(genreService.updateGenre(id, genreDTO));
+    public ResponseEntity<GenreDTO> updateGenre(@PathVariable Long id, @Valid @RequestBody GenreRequestDTO genreRequestDTO) {
+        return ResponseEntity.ok(genreService.updateGenre(id, genreRequestDTO));
     }
 
     // Delete genre

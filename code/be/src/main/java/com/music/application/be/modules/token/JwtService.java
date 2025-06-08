@@ -8,7 +8,6 @@ import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import javax.crypto.SecretKey;
@@ -30,12 +29,11 @@ public class JwtService {
     @Autowired
     private TokenRepository tokenRepository;
 
-    @Cacheable(value = "jwtUsername", key = "#token")
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
     }
 
-    @Cacheable(value = "jwtValid", key = "#token")
+
     public boolean isValid(String token, UserDetails user) {
         String username = extractUsername(token);
 
@@ -47,7 +45,6 @@ public class JwtService {
         return (username.equals(user.getUsername())) && !isTokenExpired(token) && validToken;
     }
 
-    @Cacheable(value = "jwtRefreshValid", key = "#token")
     public boolean isValidRefreshToken(String token, User user) {
         String username = extractUsername(token);
 
@@ -81,12 +78,13 @@ public class JwtService {
                 .getPayload();
     }
 
+
     public String generateAccessToken(User user) {
         return generateToken(user, accessTokenExpire);
     }
 
     public String generateRefreshToken(User user) {
-        return generateToken(user, refreshTokenExpire);
+        return generateToken(user, refreshTokenExpire );
     }
 
     private String generateToken(User user, long expireTime) {
@@ -111,6 +109,7 @@ public class JwtService {
 
         return token;
     }
+
 
     private SecretKey getSigninKey() {
         byte[] keyBytes = Decoders.BASE64URL.decode(secretKey);

@@ -1,4 +1,4 @@
-package com.music.application.be.modules.follow_artist;
+package com.music.application.be.modules.follow_artist.dto;
 
 import lombok.Data;
 

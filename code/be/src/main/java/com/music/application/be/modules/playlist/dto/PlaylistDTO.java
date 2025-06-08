@@ -1,25 +1,24 @@
-package com.music.application.be.modules.artist;
+package com.music.application.be.modules.playlist.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
-public class ArtistDTO {
+public class PlaylistDTO {
     private Long id;
 
     @NotBlank(message = "Name is mandatory")
     @Size(max = 255, message = "Name must be less than 255 characters")
     private String name;
 
-    private String avatar;
-
     @Size(max = 1000, message = "Description must be less than 1000 characters")
     private String description;
 
-    private int followerCount;
+    private LocalDateTime createdAt;
 
-    private List<Long> albumIds; // Giữ albumIds để hỗ trợ lấy danh sách album
+    private List<Long> genreIds;
 }

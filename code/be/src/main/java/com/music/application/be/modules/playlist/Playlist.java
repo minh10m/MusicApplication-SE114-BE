@@ -31,9 +31,6 @@ public class Playlist {
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
-    @OneToMany(mappedBy = "playlist", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<SongPlaylist> songs = new ArrayList<>();
-
     @ManyToMany
     @JoinTable(
             name = "playlist_genre",
@@ -41,4 +38,8 @@ public class Playlist {
             inverseJoinColumns = @JoinColumn(name = "genre_id")
     )
     private List<Genre> genres = new ArrayList<>();
+
+    //Thêm quan hệ để khi xóa playlist thì xóa lun các data trong bảng song_playlist liên quan đến playlist đó
+    @OneToMany(mappedBy = "playlist", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<SongPlaylist> songPlaylists;
 }

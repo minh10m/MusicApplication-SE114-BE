@@ -26,7 +26,7 @@ public class Album {
     @Column(name = "release_date")
     private LocalDate releaseDate;
 
-    @Column(name = "cover_image")
+    @Column(name = "cover_image", columnDefinition = "TEXT", nullable = false)
     private String coverImage;
 
     @Column(columnDefinition = "TEXT")
@@ -35,7 +35,4 @@ public class Album {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "artist_id", nullable = false)
     private Artist artist;
-
-    @OneToMany(mappedBy = "album", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Song> songs = new ArrayList<>();
 }

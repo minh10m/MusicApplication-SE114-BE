@@ -2,11 +2,11 @@ package com.music.application.be.modules.favorite_album;
 
 import com.music.application.be.modules.album.Album;
 import com.music.application.be.modules.album.AlbumRepository;
+import com.music.application.be.modules.favorite_album.dto.FavoriteAlbumDTO;
 import com.music.application.be.modules.user.User;
 import com.music.application.be.modules.user.UserRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -26,12 +26,11 @@ public class FavoriteAlbumService {
     private AlbumRepository albumRepository;
 
     // Add favorite album
-    @CacheEvict(value = {"favoriteAlbums", "favoriteAlbumsSearch"}, key = "#userId")
     public FavoriteAlbumDTO addFavoriteAlbum(Long userId, Long albumId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + userId));
         Album album = albumRepository.findById(albumId)
-                .orElseThrow(() -> new RuntimeException("Album not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Album not found with id: " + albumId));
 
         FavoriteAlbum favoriteAlbum = FavoriteAlbum.builder()
                 .user(user)
@@ -44,23 +43,20 @@ public class FavoriteAlbumService {
     }
 
     // Get favorite albums
-    @Cacheable(value = "favoriteAlbums", key = "#userId + '-' + #pageable.pageNumber + '-' + #pageable.pageSize")
     public Page<FavoriteAlbumDTO> getFavoriteAlbums(Long userId, Pageable pageable) {
         return favoriteAlbumRepository.findByUserId(userId, pageable).map(this::mapToDTO);
     }
 
     // Search favorite albums
-    @Cacheable(value = "favoriteAlbumsSearch", key = "#userId + '-' + #query + '-' + #pageable.pageNumber + '-' + #pageable.pageSize")
     public Page<FavoriteAlbumDTO> searchFavoriteAlbums(Long userId, String query, Pageable pageable) {
         return favoriteAlbumRepository.findByUserIdAndAlbumNameContainingIgnoreCase(userId, query, pageable)
                 .map(this::mapToDTO);
     }
 
     // Remove favorite album
-    @CacheEvict(value = {"favoriteAlbums", "favoriteAlbumsSearch"}, key = "#favoriteAlbum.user.id")
     public void removeFavoriteAlbum(Long id) {
         FavoriteAlbum favoriteAlbum = favoriteAlbumRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Favorite album not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Favorite album not found with id: " + id));
         favoriteAlbumRepository.delete(favoriteAlbum);
     }
 

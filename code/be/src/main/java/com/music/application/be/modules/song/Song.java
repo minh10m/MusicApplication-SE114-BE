@@ -25,9 +25,10 @@ public class Song {
 
     private int duration; // in seconds
 
-    @Column(name = "audio_url")
+    @Column(columnDefinition = "TEXT", nullable = false)
     private String audioUrl;
 
+    @Column(columnDefinition = "TEXT", nullable = false)
     private String thumbnail;
 
     @Column(columnDefinition = "TEXT")
