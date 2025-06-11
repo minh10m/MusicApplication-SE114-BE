@@ -1,7 +1,8 @@
 package com.music.application.be.modules.user;
 
-import com.music.application.be.modules.user.dto.UserDTO;
+import com.music.application.be.modules.user.dto.UserDetailDTO;
 import com.music.application.be.modules.user.dto.UserResponseDTO;
+import com.music.application.be.modules.user.dto.UserUpdateDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,29 +15,34 @@ import java.util.List;
 @RequestMapping("/users")
 public class UserController {
 
+    private final UserService userService;
+
     @Autowired
-    private UserService userService;
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
 
     @GetMapping("/{userId}")
-    public ResponseEntity<User> getUser(@PathVariable Long userId) {
-        User user = userService.getUserById(userId);
+    public ResponseEntity<UserDetailDTO> getUserById(@PathVariable Long userId) {
+        UserDetailDTO user = userService.getUserById(userId);
         return ResponseEntity.ok(user);
     }
 
     @PutMapping("/{userId}")
-    public ResponseEntity<User> updateUser(
+    public ResponseEntity<UserDetailDTO> updateUser(
             @PathVariable Long userId,
-            @RequestPart("user") UserDTO userDTO,
+            @RequestPart("user") UserUpdateDTO userUpdateDTO,
             @RequestPart(value = "avatar", required = false) MultipartFile avatarFile) throws IOException {
-        User updatedUser = userService.updateUser(userId, userDTO, avatarFile);
+
+        UserDetailDTO updatedUser = userService.updateUser(userId, userUpdateDTO, avatarFile);
         return ResponseEntity.ok(updatedUser);
     }
 
     @GetMapping
     public ResponseEntity<List<UserResponseDTO>> getAllUsers() {
-        return ResponseEntity.ok(userService.getAllUsers());
+        List<UserResponseDTO> users = userService.getAllUsers();
+        return ResponseEntity.ok(users);
     }
-
 
     @DeleteMapping("/{userId}")
     public ResponseEntity<Void> deleteUser(@PathVariable Long userId) {
