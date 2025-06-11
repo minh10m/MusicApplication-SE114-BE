@@ -7,6 +7,9 @@ import com.music.application.be.modules.artist.Artist;
 import com.music.application.be.modules.artist.ArtistRepository;
 import com.music.application.be.modules.cloudinary.CloudinaryService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -49,6 +52,7 @@ public class AlbumService {
         return mapToResponseDTO(savedAlbum);
     }
 
+    @CachePut(value = "albums", key = "#id")
     public AlbumResponseDTO updateAlbum(Long id, UpdateAlbumDTO updateAlbumDTO, MultipartFile coverImageFile) throws IOException {
         Album album = albumRepository.findById(id)
                 .orElseThrow(() -> new jakarta.persistence.EntityNotFoundException("Album not found with id: " + id));
@@ -76,26 +80,31 @@ public class AlbumService {
         return mapToResponseDTO(updatedAlbum);
     }
 
+    @Cacheable(value = "albums", key = "#id")
     public AlbumResponseDTO getAlbumById(Long id) {
         Album album = albumRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Album not found"));
         return mapToResponseDTO(album);
     }
 
+    @Cacheable(value = "albumsPage", key = "'page_' + #pageable.pageNumber + '_size_' + #pageable.pageSize")
     public Page<AlbumResponseDTO> getAllAlbums(Pageable pageable) {
         return albumRepository.findAll(pageable).map(this::mapToResponseDTO);
     }
 
+    @CacheEvict(value = "albums", key = "#id")
     public void deleteAlbum(Long id) {
         Album album = albumRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Album not found"));
         albumRepository.delete(album);
     }
 
+    @Cacheable(value = "albumsSearch", key = "#query + '-' + #pageable.pageNumber + '-' + #pageable.pageSize")
     public Page<AlbumResponseDTO> searchAlbums(String query, Pageable pageable) {
         return albumRepository.findByNameContainingIgnoreCase(query, pageable).map(this::mapToResponseDTO);
     }
 
+    @Cacheable(value = "albumsByArtist", key = "#artistId + '-' + #pageable.pageNumber + '-' + #pageable.pageSize")
     public Page<AlbumResponseDTO> getAlbumsByArtist(Long artistId, Pageable pageable) {
         return albumRepository.findByArtistId(artistId, pageable).map(this::mapToResponseDTO);
     }

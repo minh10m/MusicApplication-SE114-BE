@@ -1,21 +1,22 @@
 package com.music.application.be.modules.user.dto;
 
 import com.music.application.be.modules.role.Role;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
+import java.time.LocalDateTime;
 
-@Data
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserResponseDTO {
+public class UserDetailDTO {
     private Long id;
     private Role role;
     private String username;
     private String email;
     private String phone;
     private String avatar;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }

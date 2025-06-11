@@ -1,9 +1,8 @@
 package com.music.application.be.modules.user;
 
 import com.music.application.be.modules.cloudinary.CloudinaryService;
-import com.music.application.be.modules.user.dto.UserDTO;
+import com.music.application.be.modules.user.dto.*;
 import jakarta.persistence.EntityNotFoundException;
-import com.music.application.be.modules.user.dto.UserResponseDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
@@ -26,15 +25,17 @@ public class UserService {
     private final CloudinaryService cloudinaryService;
 
     @Cacheable(value = "users", key = "#userId")
-    public User getUserById(Long userId) {
-        return userRepository.findById(userId)
+    public UserDetailDTO getUserById(Long userId) {
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + userId));
+        return convertToDetailDTO(user);
     }
 
     @CachePut(value = "users", key = "#userId")
     @CacheEvict(value = {"allUsers", "followedArtists", "searchedFollowedArtists"}, allEntries = true)
-    public User updateUser(Long userId, UserDTO userDTO, MultipartFile avatarFile) throws IOException {
-        User user = getUserById(userId);
+    public UserDetailDTO updateUser(Long userId, UserUpdateDTO userDTO, MultipartFile avatarFile) throws IOException {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + userId));
 
         if (userDTO.getUsername() != null && !userDTO.getUsername().trim().isEmpty()) {
             user.setUsername(userDTO.getUsername());
@@ -45,36 +46,53 @@ public class UserService {
         if (userDTO.getEmail() != null && !userDTO.getEmail().trim().isEmpty()) {
             user.setEmail(userDTO.getEmail());
         }
-        if (userDTO.getPassword() != null && !userDTO.getPassword().trim().isEmpty()) {
-            user.setPassword(passwordEncoder.encode(userDTO.getPassword()));
-        }
 
         if (avatarFile != null && !avatarFile.isEmpty()) {
             String avatarUrl = cloudinaryService.uploadFile(avatarFile, "image");
             user.setAvatar(avatarUrl);
         }
 
-        return userRepository.save(user);
+        User updatedUser = userRepository.save(user);
+        return convertToDetailDTO(updatedUser);
     }
 
     @Cacheable(value = "allUsers")
     public List<UserResponseDTO> getAllUsers() {
         return userRepository.findAll()
                 .stream()
-                .map(user -> new UserResponseDTO(
-                        user.getId(),
-                        user.getRole(),
-                        user.getUsername(),
-                        user.getEmail(),
-                        user.getPhone(),
-                        user.getAvatar()
-                ))
+                .map(this::convertToResponseDTO)
                 .toList();
     }
 
-    @CacheEvict(value = {"users", "allUsers", "followedArtists", "searchedFollowedArtists"}, allEntries = true)
+    @CacheEvict(value = {"users", "allUsers", "followedArtists", "searchedFollowedArtists"}, key = "#userId")
     public void deleteUser(Long userId) {
-        User user = getUserById(userId);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + userId));
         userRepository.delete(user);
+    }
+
+    // Các phương thức chuyển đổi DTO
+    private UserDetailDTO convertToDetailDTO(User user) {
+        return UserDetailDTO.builder()
+                .id(user.getId())
+                .role(user.getRole())
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .phone(user.getPhone())
+                .avatar(user.getAvatar())
+                .createdAt(user.getCreatedAt())
+                .updatedAt(user.getUpdatedAt())
+                .build();
+    }
+
+    private UserResponseDTO convertToResponseDTO(User user) {
+        return UserResponseDTO.builder()
+                .id(user.getId())
+                .role(user.getRole())
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .phone(user.getPhone())
+                .avatar(user.getAvatar())
+                .build();
     }
 }

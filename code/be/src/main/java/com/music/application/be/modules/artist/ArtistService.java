@@ -5,6 +5,9 @@ import com.music.application.be.modules.artist.dto.ArtistResponseDTO;
 import com.music.application.be.modules.artist.dto.CreateArtistDTO;
 import com.music.application.be.modules.artist.dto.UpdateArtistDTO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -29,16 +32,19 @@ public class ArtistService {
         return mapToResponseDTO(savedArtist);
     }
 
+    @Cacheable(value = "artists", key = "#id")
     public ArtistResponseDTO getArtistById(Long id) {
         Artist artist = artistRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Artist not found"));
         return mapToResponseDTO(artist);
     }
 
+    @Cacheable(value = "artistsPage", key = "#pageable.pageNumber + '-' + #pageable.pageSize")
     public Page<ArtistResponseDTO> getAllArtists(Pageable pageable) {
         return artistRepository.findAll(pageable).map(this::mapToResponseDTO);
     }
 
+    @CachePut(value = "artists", key = "#id")
     public ArtistResponseDTO updateArtist(Long id, UpdateArtistDTO updateArtistDTO) {
         Artist artist = artistRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Artist not found"));
@@ -57,12 +63,14 @@ public class ArtistService {
         return mapToResponseDTO(updatedArtist);
     }
 
+    @CacheEvict(value = "artists", key = "#id")
     public void deleteArtist(Long id) {
         Artist artist = artistRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Artist not found"));
         artistRepository.delete(artist);
     }
 
+    @Cacheable(value = "artistsSearch", key = "#query + '-' + #pageable.pageNumber + '-' + #pageable.pageSize")
     public Page<ArtistResponseDTO> searchArtists(String query, Pageable pageable) {
         return artistRepository.findByNameContainingIgnoreCase(query, pageable).map(this::mapToResponseDTO);
     }

@@ -1,5 +1,6 @@
 package com.music.application.be.modules.user;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.music.application.be.modules.artist.Artist;
 import com.music.application.be.modules.forget_password.ForgetPassword;
 import com.music.application.be.modules.playlist.Playlist;
@@ -89,6 +90,7 @@ public class User implements UserDetails {
 //    private String theme;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private List<Token> tokens;
 
     @OneToOne(mappedBy = "user")

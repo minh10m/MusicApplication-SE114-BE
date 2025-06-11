@@ -1,21 +1,20 @@
 package com.music.application.be.modules.user.dto;
 
-import com.music.application.be.modules.role.Role;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-
-@Data
-@Builder
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserResponseDTO {
-    private Long id;
-    private Role role;
+public class UserUpdateDTO {
+    @NotBlank
     private String username;
+    @Email
     private String email;
     private String phone;
-    private String avatar;
 }
