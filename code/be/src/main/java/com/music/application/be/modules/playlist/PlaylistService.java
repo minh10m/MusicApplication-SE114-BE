@@ -4,10 +4,13 @@ import com.music.application.be.modules.genre.Genre;
 import com.music.application.be.modules.genre.GenreRepository;
 import com.music.application.be.modules.playlist.dto.PlaylistDTO;
 import com.music.application.be.modules.playlist.dto.PlaylistRequestDTO;
+import com.music.application.be.modules.role.Role;
 import com.music.application.be.modules.song.Song;
 import com.music.application.be.modules.song.SongRepository;
 import com.music.application.be.modules.song_playlist.SongPlaylist;
 import com.music.application.be.modules.song_playlist.SongPlaylistRepository;
+import com.music.application.be.modules.user.User;
+import com.music.application.be.modules.user.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
@@ -15,6 +18,7 @@ import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -36,21 +40,47 @@ public class PlaylistService {
     @Autowired
     private SongPlaylistRepository songPlaylistRepository;
 
-    // Create
+    @Autowired
+    private UserRepository userRepository;
+
+    // Create playlist for user (no genre)
     @CacheEvict(value = {"playlists", "searchedPlaylists"}, allEntries = true)
     public PlaylistDTO createPlaylist(PlaylistRequestDTO playlistRequestDTO) {
+        User user = userRepository.findById(playlistRequestDTO.getUserId())
+                .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + playlistRequestDTO.getUserId()));
+
         Playlist playlist = new Playlist();
         playlist.setName(playlistRequestDTO.getName());
         playlist.setDescription(playlistRequestDTO.getDescription());
         playlist.setCreatedAt(LocalDateTime.now());
+        playlist.setCreatedBy(user);
 
-        // Liên kết genres
+        // Không xử lý genre cho user
+        Playlist savedPlaylist = playlistRepository.save(playlist);
+        return mapToDTO(savedPlaylist);
+    }
+
+    // Create playlist for admin with genres (auto-add songs)
+    @CacheEvict(value = {"playlists", "searchedPlaylists"}, allEntries = true)
+    public PlaylistDTO createPlaylistWithGenres(PlaylistRequestDTO playlistRequestDTO) {
+        User user = userRepository.findById(playlistRequestDTO.getUserId())
+                .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + playlistRequestDTO.getUserId()));
+
+        Playlist playlist = new Playlist();
+        playlist.setName(playlistRequestDTO.getName());
+        playlist.setDescription(playlistRequestDTO.getDescription());
+        playlist.setCreatedAt(LocalDateTime.now());
+        playlist.setCreatedBy(user);
+
+        // Liên kết genres (chỉ admin sử dụng)
         if (playlistRequestDTO.getGenreIds() != null && !playlistRequestDTO.getGenreIds().isEmpty()) {
             List<Genre> genres = genreRepository.findAllById(playlistRequestDTO.getGenreIds());
             if (genres.size() != playlistRequestDTO.getGenreIds().size()) {
                 throw new EntityNotFoundException("One or more genres not found");
             }
             playlist.setGenres(genres);
+        } else {
+            throw new IllegalArgumentException("Genre IDs are required for admin-created playlists");
         }
 
         Playlist savedPlaylist = playlistRepository.save(playlist);
@@ -91,10 +121,16 @@ public class PlaylistService {
         Playlist playlist = playlistRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Playlist not found with id: " + id));
 
+        String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
+        User currentUser = userRepository.findByUsername(currentUsername)
+                .orElseThrow(() -> new EntityNotFoundException("Current user not found"));
+        if (!currentUser.getId().equals(playlist.getCreatedBy().getId()) && !currentUser.getRole().equals(Role.ADMIN)) {
+            throw new SecurityException("You do not have permission to update this playlist");
+        }
+
         playlist.setName(playlistRequestDTO.getName());
         playlist.setDescription(playlistRequestDTO.getDescription());
 
-        // Cập nhật genres
         if (playlistRequestDTO.getGenreIds() != null) {
             List<Genre> genres = genreRepository.findAllById(playlistRequestDTO.getGenreIds());
             if (genres.size() != playlistRequestDTO.getGenreIds().size()) {
@@ -105,11 +141,9 @@ public class PlaylistService {
             playlist.setGenres(null);
         }
 
-        // Xóa các bài hát cũ
         List<SongPlaylist> existingSongs = songPlaylistRepository.findByPlaylistIdOrderByAddedAtDesc(id);
         songPlaylistRepository.deleteAll(existingSongs);
 
-        // Tự động thêm các bài hát có genre trùng
         if (playlist.getGenres() != null && !playlist.getGenres().isEmpty()) {
             List<Song> matchingSongs = songRepository.findByGenresIn(playlist.getGenres());
             for (Song song : matchingSongs) {
@@ -130,6 +164,13 @@ public class PlaylistService {
     public void deletePlaylist(Long id) {
         Playlist playlist = playlistRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Playlist not found with id: " + id));
+
+        String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
+        User currentUser = userRepository.findByUsername(currentUsername)
+                .orElseThrow(() -> new EntityNotFoundException("Current user not found"));
+        if (!currentUser.getId().equals(playlist.getCreatedBy().getId()) && !currentUser.getRole().equals(Role.ADMIN)) {
+            throw new SecurityException("You do not have permission to delete this playlist");
+        }
 
         playlistRepository.delete(playlist);
     }
@@ -155,7 +196,8 @@ public class PlaylistService {
         dto.setName(playlist.getName());
         dto.setDescription(playlist.getDescription());
         dto.setCreatedAt(playlist.getCreatedAt());
-        dto.setGenreIds(playlist.getGenres().stream().map(Genre::getId).collect(Collectors.toList()));
+        dto.setGenreIds(playlist.getGenres() != null ? playlist.getGenres().stream().map(Genre::getId).collect(Collectors.toList()) : null);
+        dto.setUserId(playlist.getCreatedBy().getId());
         return dto;
     }
 }

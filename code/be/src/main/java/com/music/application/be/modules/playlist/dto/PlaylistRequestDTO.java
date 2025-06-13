@@ -1,6 +1,7 @@
 package com.music.application.be.modules.playlist.dto;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
@@ -8,6 +9,9 @@ import java.util.List;
 
 @Data
 public class PlaylistRequestDTO {
+    @NotNull(message = "User ID is required")
+    private Long userId; // Thêm userId để xác định người tạo
+
     @NotBlank(message = "Name is mandatory")
     @Size(max = 255, message = "Name must be less than 255 characters")
     private String name;
@@ -15,5 +19,5 @@ public class PlaylistRequestDTO {
     @Size(max = 1000, message = "Description must be less than 1000 characters")
     private String description;
 
-    private List<Long> genreIds;
+    private List<Long> genreIds; // Optional, chỉ admin được sử dụng
 }

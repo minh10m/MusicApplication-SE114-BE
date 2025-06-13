@@ -2,6 +2,7 @@ package com.music.application.be.modules.playlist;
 
 import com.music.application.be.modules.genre.Genre;
 import com.music.application.be.modules.song_playlist.SongPlaylist;
+import com.music.application.be.modules.user.User;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -38,6 +39,10 @@ public class Playlist {
             inverseJoinColumns = @JoinColumn(name = "genre_id")
     )
     private List<Genre> genres = new ArrayList<>();
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "created_by", nullable = false)
+    private User createdBy; // Thêm mối quan hệ với User
 
     //Thêm quan hệ để khi xóa playlist thì xóa lun các data trong bảng song_playlist liên quan đến playlist đó
     @OneToMany(mappedBy = "playlist", cascade = CascadeType.ALL, orphanRemoval = true)

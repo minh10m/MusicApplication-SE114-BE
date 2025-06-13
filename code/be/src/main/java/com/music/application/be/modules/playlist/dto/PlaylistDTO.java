@@ -11,6 +11,8 @@ import java.util.List;
 public class PlaylistDTO {
     private Long id;
 
+    private Long userId; // Thêm userId để trả về thông tin người tạo
+
     @NotBlank(message = "Name is mandatory")
     @Size(max = 255, message = "Name must be less than 255 characters")
     private String name;
@@ -21,4 +23,5 @@ public class PlaylistDTO {
     private LocalDateTime createdAt;
 
     private List<Long> genreIds;
+
 }
